@@ -114,6 +114,21 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jahia.server</groupId>
+                <artifactId>jahia-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>i18n2js</id>
+                        <goals>
+                            <goal>javascript-dictionary</goal>
+                        </goals>
+                        <configuration>
+                            <dictionaryName>jcauthoidci18n</dictionaryName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
