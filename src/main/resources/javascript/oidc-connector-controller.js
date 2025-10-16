@@ -26,11 +26,14 @@
                     oauthApiName: `${CONNECTOR_SERVICE_NAME}-${vm.siteKey}`,
                     enabled: vm.enabled,
                     apiKey: vm.apiKey,
-                    apiSecret: 'DEFAULT_SECRET_UNUSED',
+                    apiSecret: vm.apiSecret || 'DEFAULT_SECRET_UNUSED',
+                    scope: vm.scope,
+                    authentication: vm.authentication,
                     accessTokenEndpoint: vm.accessTokenEndpoint,
                     authorizationBaseUrl: vm.authorizationBaseUrl,
                     withPKCE: vm.withPKCE,
                     callbackUrl: vm.callbackUrl,
+                    profileUrl: vm.profileUrl,
                     userAttribute: vm.userAttribute
                 }
             }).success(() => {
@@ -42,16 +45,20 @@
         vm.toggleCard = () => vm.expandedCard = !vm.expandedCard;
 
         vm.init = () => {
-            settingsService.getConnectorData(CONNECTOR_SERVICE_NAME, ['enabled', 'apiKey', 'accessTokenEndpoint', 'authorizationBaseUrl', 'withPKCE', 'callbackUrl', 'userAttribute'])
+            settingsService.getConnectorData(CONNECTOR_SERVICE_NAME, ['enabled', 'apiKey', 'apiSecret', 'scope', 'authentication', 'accessTokenEndpoint', 'authorizationBaseUrl', 'withPKCE', 'callbackUrl', 'profileUrl', 'userAttribute'])
                 .success(data => {
                     if (data && !angular.equals(data, {})) {
                         vm.expandedCard = vm.connectorHasSettings = true;
                         vm.enabled = data.enabled;
                         vm.apiKey = data.apiKey;
+                        vm.apiSecret = data.apiSecret;
+                        vm.scope = data.scope;
+                        vm.authentication = data.authentication || 'basic';
                         vm.accessTokenEndpoint = data.accessTokenEndpoint;
                         vm.authorizationBaseUrl = data.authorizationBaseUrl;
                         vm.withPKCE = data.withPKCE === 'true';
                         vm.callbackUrl = data.callbackUrl || '';
+                        vm.profileUrl = data.profileUrl || '';
                         vm.userAttribute = data.userAttribute || '';
                     } else {
                         vm.connectorHasSettings = false;

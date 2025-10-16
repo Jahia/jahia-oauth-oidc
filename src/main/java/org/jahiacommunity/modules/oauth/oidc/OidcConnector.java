@@ -1,5 +1,6 @@
 package org.jahiacommunity.modules.oauth.oidc;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaauth.service.ConnectorService;
@@ -25,6 +26,8 @@ public class OidcConnector implements OAuthConnectorService {
 
     public static final String KEY = "OidcConnector";
 
+    private String userAttribute;
+
     @Reference
     private JahiaOAuthService jahiaOAuthService;
     @Reference
@@ -49,12 +52,14 @@ public class OidcConnector implements OAuthConnectorService {
 
     @Override
     public void validateSettings(ConnectorConfig connectorConfig) throws IOException {
+        userAttribute = connectorConfig.getProperty("userAttribute");
         String siteName = connectorConfig.getProperty(JahiaAuthConstants.PROPERTY_SITE_KEY);
         jahiaOAuthService.addOAuthDefaultApi20(KEY + "-" + siteName, config -> OidcApi.instance(
                 siteName,
                 config.getBooleanProperty("withPKCE"),
                 config.getProperty("accessTokenEndpoint"),
-                config.getProperty("authorizationBaseUrl")));
+                config.getProperty("authorizationBaseUrl"),
+                config.getProperty("authentication")));
     }
 
     @Deactivate
@@ -64,16 +69,17 @@ public class OidcConnector implements OAuthConnectorService {
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig connectorConfig) {
+        if (StringUtils.isNotBlank(connectorConfig.getProperty("profileUrl"))) {
+            return connectorConfig.getProperty("profileUrl");
+        }
         return null;
     }
 
     @Override
-    public List<String> getProtectedResourceUrls(ConnectorConfig config) {
-        return Collections.emptyList();
-    }
-
-    @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
-        return Collections.emptyList();
+        if (StringUtils.isBlank(userAttribute)) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(new ConnectorPropertyInfo(userAttribute, "string"));
     }
 }

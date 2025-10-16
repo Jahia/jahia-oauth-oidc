@@ -49,10 +49,13 @@
                 <md-input-container flex>
                     <label message-key="label.apiKey"></label>
                     <input type="text" ng-model="oidc.apiKey" name="apiKey" required/>
-                    <div class="hint" ng-show="oidcForm.apiKey.$valid" message-key="hint.apiKey"></div>
-                    <div ng-messages="oidcForm.apiKey.$error" role="alert">
-                        <div ng-message="required" message-key="error.apiKey.required"></div>
-                    </div>
+                </md-input-container>
+
+                <div flex="5"></div>
+
+                <md-input-container flex>
+                    <label message-key="label.apiSecret"></label>
+                    <input type="text" ng-model="oidc.apiSecret" name="apiSecret"/>
                 </md-input-container>
 
                 <div flex="5"></div>
@@ -65,26 +68,34 @@
 
             <div layout="row">
                 <md-input-container flex>
+                    <label message-key="label.scope"></label>
+                    <input type="text" ng-model="oidc.scope" name="scope"/>
+                    <div class="hint" message-key="hint.scope"></div>
+                </md-input-container>
+
+                <div flex="5"></div>
+
+                <md-input-container flex="initial">
+                    <label message-key="label.authentication"></label>
+                    <md-select ng-model="oidc.authentication">
+                        <md-option value="basic"><fmt:message key="label.authentication.basic"/></md-option>
+                        <md-option value="body"><fmt:message key="label.authentication.body"/></md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+
+            <div layout="row">
+                <md-input-container flex>
                     <label message-key="label.accessTokenEndpoint"></label>
                     <input type="url" ng-model="oidc.accessTokenEndpoint" name="accessTokenEndpoint" required/>
-                    <div class="hint" ng-show="oidcForm.accessTokenEndpoint.$valid"
-                         message-key="hint.accessTokenEndpoint"></div>
-                    <div ng-messages="oidcForm.accessTokenEndpoint.$error" role="alert">
-                        <div ng-message="url" message-key="error.notAValidUrl"></div>
-                        <div ng-message="required" message-key="error.accessTokenEndpoint.required"></div>
-                    </div>
+                    <div class="hint" message-key="hint.accessTokenEndpoint"></div>
                 </md-input-container>
             </div>
             <div layout="row">
                 <md-input-container flex>
                     <label message-key="label.authorizationBaseUrl"></label>
                     <input type="url" ng-model="oidc.authorizationBaseUrl" name="authorizationBaseUrl" required/>
-                    <div class="hint" ng-show="oidcForm.authorizationBaseUrl.$valid"
-                         message-key="hint.authorizationBaseUrl"></div>
-                    <div ng-messages="oidcForm.authorizationBaseUrl.$error" role="alert">
-                        <div ng-message="url" message-key="error.notAValidUrl"></div>
-                        <div ng-message="required" message-key="error.authorizationBaseUrl.required"></div>
-                    </div>
+                    <div class="hint" message-key="hint.authorizationBaseUrl"></div>
                 </md-input-container>
             </div>
 
@@ -92,12 +103,7 @@
                 <md-input-container class="md-block" flex>
                     <label message-key="label.callbackUrl"></label>
                     <input type="url" ng-model="oidc.callbackUrl" name="callbackUrl" required/>
-                    <div class="hint" ng-show="oidcForm.callbackUrl.$valid" message-key="hint.callbackUrl"></div>
-                    <div ng-messages="oidcForm.callbackUrl.$error" ng-show="oidcForm.callbackUrl.$invalid"
-                         role="alert">
-                        <div ng-message="url" message-key="error.notAValidUrl"></div>
-                        <div ng-message="required" message-key="error.callbackUrl.required"></div>
-                    </div>
+                    <div class="hint" message-key="hint.callbackUrl"></div>
                 </md-input-container>
 
                 <div flex="5"></div>
@@ -105,11 +111,15 @@
                 <md-input-container class="md-block" flex="initial">
                     <label message-key="label.userAttribute"></label>
                     <input type="text" ng-model="oidc.userAttribute" name="userAttribute" required/>
-                    <div class="hint" ng-show="oidcForm.userAttribute.$valid" message-key="hint.userAttribute"></div>
-                    <div ng-messages="oidcForm.userAttribute.$error" ng-show="oidcForm.userAttribute.$invalid"
-                         role="alert">
-                        <div ng-message="required" message-key="error.userAttribute.required"></div>
-                    </div>
+                    <div class="hint" message-key="hint.userAttribute"></div>
+                </md-input-container>
+            </div>
+
+            <div layout="row">
+                <md-input-container class="md-block" flex>
+                    <label message-key="label.profileUrl"></label>
+                    <input type="url" ng-model="oidc.profileUrl" name="profileUrl" required/>
+                    <div class="hint" message-key="hint.profileUrl"></div>
                 </md-input-container>
             </div>
         </form>

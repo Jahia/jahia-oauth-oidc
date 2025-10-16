@@ -7,6 +7,9 @@ import com.github.scribejava.core.httpclient.HttpClient;
 import com.github.scribejava.core.httpclient.HttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.oauth2.clientauthentication.ClientAuthentication;
+import com.github.scribejava.core.oauth2.clientauthentication.HttpBasicAuthenticationScheme;
+import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthenticationScheme;
 
 import java.io.OutputStream;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,15 +20,17 @@ public class OidcApi extends DefaultApi20 {
     private final String accessTokenEndpoint;
     private final String authorizationBaseUrl;
     private final boolean withPKCE;
+    private final String authorization;
 
-    public OidcApi(boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl) {
+    public OidcApi(boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl, String authorization) {
         this.accessTokenEndpoint = accessTokenEndpoint;
         this.authorizationBaseUrl = authorizationBaseUrl;
         this.withPKCE = withPKCE;
+        this.authorization = authorization;
     }
 
-    public static OidcApi instance(String siteKey, Boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl) {
-        INSTANCES.put(siteKey, new OidcApi(withPKCE, accessTokenEndpoint, authorizationBaseUrl));
+    public static OidcApi instance(String siteKey, Boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl, String authorization) {
+        INSTANCES.put(siteKey, new OidcApi(withPKCE, accessTokenEndpoint, authorizationBaseUrl, authorization));
         return INSTANCES.get(siteKey);
     }
 
@@ -50,5 +55,16 @@ public class OidcApi extends DefaultApi20 {
     @Override
     public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
         return OpenIdJsonTokenExtractor.instance();
+    }
+
+    @Override
+    public ClientAuthentication getClientAuthentication() {
+        if ("basic".equals(authorization)) {
+            return HttpBasicAuthenticationScheme.instance();
+        }
+        if ("body".equals(authorization)) {
+            return RequestBodyAuthenticationScheme.instance();
+        }
+        throw new RuntimeException("Unsupported client authentication");
     }
 }

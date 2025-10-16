@@ -1,6 +1,7 @@
 package org.jahiacommunity.modules.oauth.oidc;
 
 import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.jahia.api.usermanager.JahiaUserManagerService;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorResultProcessor;
@@ -40,19 +41,37 @@ public class LoginResultProcessor implements ConnectorResultProcessor {
 
     @Override
     public void execute(ConnectorConfig connectorConfig, Map<String, Object> results) {
-        try {
-            JSONObject tokenData = getTokenData(results);
-            if (tokenData == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Error parsing OpenID Token: {}", results);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Processing login results: {}", results);
+        }
+        String userAttribute = connectorConfig.getProperty("userAttribute");
+        String userId = null;
+        if (results.containsKey(userAttribute)) {
+            userId = (String) results.get(userAttribute);
+        } else {
+            try {
+                JSONObject tokenData = getTokenData(results);
+                if (tokenData != null && tokenData.has(userAttribute)) {
+                    userId = tokenData.getString(userAttribute);
                 }
-            } else if (userDoesntExist(tokenData, connectorConfig.getProperty("userAttribute"))) {
-                logger.warn("Unable to log in user: {}", results);
+            } catch (JSONException e) {
+                logger.error("Error parsing OpenID Token");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("", e);
+                }
             }
-        } catch (JSONException e) {
-            logger.error("Error parsing OpenID Token");
-            if (logger.isDebugEnabled()) {
-                logger.debug("", e);
+        }
+        if (StringUtils.isBlank(userId)) {
+            logger.debug("No user found");
+        } else {
+            if (!jahiaUserManagerService.userExists(userId)) {
+                logger.warn("Unable to log in user: {}", userId);
+            } else {
+                logger.debug("User {} exists", userId);
+                // store login to cache
+                jahiaAuthMapperService.cacheMapperResults(OidcConnector.KEY, RequestContextHolder.getRequestAttributes().getSessionId(),
+                        Collections.singletonMap(JahiaAuthConstants.SSO_LOGIN, new MappedProperty(
+                                new MappedPropertyInfo(JahiaAuthConstants.SSO_LOGIN), userId)));
             }
         }
         authorizationUrlBuilders.remove(RequestContextHolder.getRequestAttributes().getSessionId());
@@ -68,21 +87,6 @@ public class LoginResultProcessor implements ConnectorResultProcessor {
             }
         }
         return null;
-    }
-
-    private boolean userDoesntExist(JSONObject tokenData, String userKey) throws JSONException {
-        if (tokenData.has(userKey)) {
-            String userId = tokenData.getString(userKey);
-            if (jahiaUserManagerService.userExists(userId)) {
-                logger.debug("User {} exists", userId);
-                // store login to cache
-                jahiaAuthMapperService.cacheMapperResults(OidcConnector.KEY, RequestContextHolder.getRequestAttributes().getSessionId(),
-                        Collections.singletonMap(JahiaAuthConstants.SSO_LOGIN, new MappedProperty(
-                                new MappedPropertyInfo(JahiaAuthConstants.SSO_LOGIN), userId)));
-                return false;
-            }
-        }
-        return true;
     }
 
     public void setAuthorizationUrlBuilder(AuthorizationUrlBuilder authorizationUrlBuilder) {
