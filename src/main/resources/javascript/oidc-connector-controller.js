@@ -54,6 +54,8 @@
 
         vm.toggleCard = () => vm.expandedCard = !vm.expandedCard;
 
+        vm.goToMappers = () => $location.path(`/mappers/${CONNECTOR_SERVICE_NAME}`);
+
         vm.init = () => {
             settingsService.getConnectorData(CONNECTOR_SERVICE_NAME, ['enabled', 'apiKey', 'apiSecret', 'scope', 'authentication', 'accessTokenEndpoint', 'authorizationBaseUrl', 'withPKCE', 'callbackUrl', 'returnMode', 'returnUrl', 'returnCookie', 'profileUrl', 'userAttribute'])
                 .success(data => {
