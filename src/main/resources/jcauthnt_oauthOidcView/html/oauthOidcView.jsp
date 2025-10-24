@@ -122,6 +122,27 @@
                     <div class="hint" message-key="hint.profileUrl"></div>
                 </md-input-container>
             </div>
+
+            <div layout="row">
+                <md-input-container flex="initial">
+                    <label message-key="label.returnMode"></label>
+                    <md-select ng-model="oidc.returnMode" required>
+                        <md-option value="url"><fmt:message key="label.returnMode.url"/></md-option>
+                        <md-option value="cookie"><fmt:message key="label.returnMode.cookie"/></md-option>
+                    </md-select>
+                </md-input-container>
+
+                <div flex="5"></div>
+
+                <md-input-container ng-show="oidc.returnMode == 'url'" class="md-block" flex>
+                    <label message-key="label.returnMode.url"></label>
+                    <input type="url" ng-model="oidc.returnUrl" name="returnUrl" required/>
+                </md-input-container>
+                <md-input-container ng-show="oidc.returnMode == 'cookie'" class="md-block" flex>
+                    <label message-key="label.returnMode.cookie"></label>
+                    <input type="text" ng-model="oidc.returnCookie" name="returnCookie" required/>
+                </md-input-container>
+            </div>
         </form>
 
         <md-card-actions layout="row" layout-align="end center">

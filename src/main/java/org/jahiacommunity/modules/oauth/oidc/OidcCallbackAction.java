@@ -18,10 +18,13 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component(service = Action.class)
 public class OidcCallbackAction extends Action {
@@ -54,10 +57,30 @@ public class OidcCallbackAction extends Action {
                 String siteKey = renderContext.getSite().getSiteKey();
                 ConnectorConfig connectorConfig = settingsService.getConnectorConfig(siteKey, OidcConnector.KEY);
                 jahiaOAuthService.extractAccessTokenAndExecuteMappers(connectorConfig, token, httpServletRequest.getSession(false).getId());
-                String returnUrl = jcrTemplate.doExecuteWithSystemSessionAsUser(null, renderContext.getWorkspace(), renderContext.getMainResourceLocale(), systemSession ->
-                        jahiaSitesService.getSiteByKey(siteKey, systemSession).getHome().getUrl());
+                String returnMode = connectorConfig.getProperty("returnMode");
+                String returnUrl = null;
+                if ("url".equals(returnMode)) {
+                    returnUrl = connectorConfig.getProperty("returnUrl");
+                } else if ("cookie".equals(returnMode)) {
+                    String cookieName = connectorConfig.getProperty("returnCookie");
+                    if (StringUtils.isNotBlank(cookieName)) {
+                        // read cookie
+                        Optional<String> cookieRedirect = Optional.ofNullable(httpServletRequest.getCookies()).flatMap(cookies -> Arrays.stream(cookies)
+                                .filter(cookie -> cookie.getName().equals(cookieName))
+                                .map(Cookie::getValue)
+                                .findFirst());
+                        if (cookieRedirect.isPresent()) {
+                            returnUrl = cookieRedirect.get();
+                        }
+                    }
+                }
+                if (StringUtils.isBlank(returnUrl)) {
+                    // by default redirect to site homepage
+                    returnUrl = jcrTemplate.doExecuteWithSystemSessionAsUser(null, renderContext.getWorkspace(), renderContext.getMainResourceLocale(), systemSession ->
+                            jahiaSitesService.getSiteByKey(siteKey, systemSession).getHome().getUrl());
+                }
                 // site query param is mandatory for the SSOValve in jahia-authentication module
-                return new ActionResult(HttpServletResponse.SC_OK, returnUrl + "?site=" + siteKey, true, null);
+                return new ActionResult(HttpServletResponse.SC_OK, returnUrl + (StringUtils.contains(returnUrl, "?") ? "&" : "?") + "site=" + siteKey, true, null);
             } catch (Exception e) {
                 logger.error("", e);
             }
