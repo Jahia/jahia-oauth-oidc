@@ -147,7 +147,8 @@
         </form>
 
         <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-accent" ng-click="oidc.goToMappers()" ng-show="oidc.connectorHasSettings" message-key="label.mappers"></md-button>
+            <md-button class="md-accent" ng-click="oidc.goToMappers()" ng-show="oidc.connectorHasSettings"
+                       message-key="label.mappers"></md-button>
             <md-button class="md-accent" ng-click="oidc.saveSettings()" message-key="label.save"></md-button>
         </md-card-actions>
 

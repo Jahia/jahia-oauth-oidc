@@ -76,6 +76,12 @@ public class OidcConnector implements OAuthConnectorService {
     }
 
     @Override
+    public List<String> getProtectedResourceUrls(ConnectorConfig connectorConfig) {
+        String profileUrl = getProtectedResourceUrl(connectorConfig);
+        return profileUrl == null ? Collections.emptyList() : Collections.singletonList(profileUrl);
+    }
+
+    @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
         if (StringUtils.isBlank(userAttribute)) {
             return Collections.emptyList();
