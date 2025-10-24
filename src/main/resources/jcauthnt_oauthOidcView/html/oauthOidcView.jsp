@@ -77,7 +77,7 @@
 
                 <md-input-container flex="initial">
                     <label message-key="label.authentication"></label>
-                    <md-select ng-model="oidc.authentication">
+                    <md-select ng-model="oidc.authentication" required>
                         <md-option value="basic"><fmt:message key="label.authentication.basic"/></md-option>
                         <md-option value="body"><fmt:message key="label.authentication.body"/></md-option>
                     </md-select>
@@ -118,7 +118,7 @@
             <div layout="row">
                 <md-input-container class="md-block" flex>
                     <label message-key="label.profileUrl"></label>
-                    <input type="url" ng-model="oidc.profileUrl" name="profileUrl" required/>
+                    <input type="url" ng-model="oidc.profileUrl" name="profileUrl"/>
                     <div class="hint" message-key="hint.profileUrl"></div>
                 </md-input-container>
             </div>
@@ -127,6 +127,7 @@
                 <md-input-container flex="initial">
                     <label message-key="label.returnMode"></label>
                     <md-select ng-model="oidc.returnMode" required>
+                        <md-option value="homepage"><fmt:message key="label.returnMode.homepage"/></md-option>
                         <md-option value="url"><fmt:message key="label.returnMode.url"/></md-option>
                         <md-option value="cookie"><fmt:message key="label.returnMode.cookie"/></md-option>
                     </md-select>

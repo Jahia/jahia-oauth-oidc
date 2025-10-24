@@ -68,7 +68,7 @@
                         vm.authorizationBaseUrl = data.authorizationBaseUrl;
                         vm.withPKCE = data.withPKCE === 'true';
                         vm.callbackUrl = data.callbackUrl || '';
-                        vm.returnMode = data.returnMode;
+                        vm.returnMode = data.returnMode || 'homepage';
                         if (vm.returnMode === 'url') vm.returnUrl = data.returnUrl || '';
                         if (vm.returnMode === 'cookie') vm.returnCookie = data.returnCookie || '';
                         vm.profileUrl = data.profileUrl || '';
@@ -76,6 +76,8 @@
                     } else {
                         vm.connectorHasSettings = false;
                         vm.enabled = false;
+                        vm.authentication = 'basic';
+                        vm.returnMode = 'homepage';
                     }
                 })
                 .error(data => helperService.errorToast(`${i18nService.message('jcauthnt_oauthOidcView')}: ${data.error}`));
