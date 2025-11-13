@@ -105,14 +105,6 @@
                     <input type="url" ng-model="oidc.callbackUrl" name="callbackUrl" required/>
                     <div class="hint" message-key="hint.callbackUrl"></div>
                 </md-input-container>
-
-                <div flex="5"></div>
-
-                <md-input-container class="md-block" flex="initial">
-                    <label message-key="label.userAttribute"></label>
-                    <input type="text" ng-model="oidc.userAttribute" name="userAttribute" required/>
-                    <div class="hint" message-key="hint.userAttribute"></div>
-                </md-input-container>
             </div>
 
             <div layout="row">

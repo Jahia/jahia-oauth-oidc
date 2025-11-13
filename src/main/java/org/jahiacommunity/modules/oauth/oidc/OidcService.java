@@ -26,13 +26,13 @@ public class OidcService extends OAuth20Service {
     public AuthorizationUrlBuilder createAuthorizationUrlBuilder() {
         AuthorizationUrlBuilder authorizationUrlBuilder = super.createAuthorizationUrlBuilder();
         authorizationUrlBuilder.initPKCE();
-        BundleUtils.getOsgiService(LoginResultProcessor.class, null).setAuthorizationUrlBuilder(authorizationUrlBuilder);
+        BundleUtils.getOsgiService(OidcConnector.class, null).setAuthorizationUrlBuilder(authorizationUrlBuilder);
         return authorizationUrlBuilder;
     }
 
     @Override
     public OAuth2AccessToken getAccessToken(String code) throws IOException, InterruptedException, ExecutionException {
-        AuthorizationUrlBuilder authorizationUrlBuilder = BundleUtils.getOsgiService(LoginResultProcessor.class, null).getAuthorizationUrlBuilder();
+        AuthorizationUrlBuilder authorizationUrlBuilder = BundleUtils.getOsgiService(OidcConnector.class, null).getAuthorizationUrlBuilder();
         if (authorizationUrlBuilder == null) {
             throw new IllegalArgumentException("No authorization url found");
         }

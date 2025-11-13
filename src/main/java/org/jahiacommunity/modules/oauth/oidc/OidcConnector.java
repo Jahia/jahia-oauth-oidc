@@ -1,5 +1,6 @@
 package org.jahiacommunity.modules.oauth.oidc;
 
+import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
@@ -15,10 +16,13 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component(service = {OidcConnector.class, OAuthConnectorService.class, ConnectorService.class}, property = {JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + OidcConnector.KEY}, immediate = true)
 public class OidcConnector implements OAuthConnectorService {
@@ -26,7 +30,11 @@ public class OidcConnector implements OAuthConnectorService {
 
     public static final String KEY = "OidcConnector";
 
-    private String userAttribute;
+    private final Map<String, AuthorizationUrlBuilder> authorizationUrlBuilders;
+
+    public OidcConnector() {
+        authorizationUrlBuilders = new HashMap<>();
+    }
 
     @Reference
     private JahiaOAuthService jahiaOAuthService;
@@ -52,10 +60,9 @@ public class OidcConnector implements OAuthConnectorService {
 
     @Override
     public void validateSettings(ConnectorConfig connectorConfig) throws IOException {
-        userAttribute = connectorConfig.getProperty("userAttribute");
-        String siteName = connectorConfig.getProperty(JahiaAuthConstants.PROPERTY_SITE_KEY);
-        jahiaOAuthService.addOAuthDefaultApi20(KEY + "-" + siteName, config -> OidcApi.instance(
-                siteName,
+        String siteKey = connectorConfig.getSiteKey();
+        jahiaOAuthService.addOAuthDefaultApi20(KEY + "-" + siteKey, config -> OidcApi.instance(
+                siteKey,
                 config.getBooleanProperty("withPKCE"),
                 config.getProperty("accessTokenEndpoint"),
                 config.getProperty("authorizationBaseUrl"),
@@ -83,9 +90,14 @@ public class OidcConnector implements OAuthConnectorService {
 
     @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
-        if (StringUtils.isBlank(userAttribute)) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(new ConnectorPropertyInfo(userAttribute, "string"));
+        return Collections.emptyList();
+    }
+
+    public void setAuthorizationUrlBuilder(AuthorizationUrlBuilder authorizationUrlBuilder) {
+        authorizationUrlBuilders.put(RequestContextHolder.getRequestAttributes().getSessionId(), authorizationUrlBuilder);
+    }
+
+    public AuthorizationUrlBuilder getAuthorizationUrlBuilder() {
+        return authorizationUrlBuilders.get(RequestContextHolder.getRequestAttributes().getSessionId());
     }
 }

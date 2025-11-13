@@ -14,7 +14,7 @@
 
         vm.saveSettings = () => {
             // Value can't be empty
-            if (!vm.siteKey || !vm.apiKey || !vm.accessTokenEndpoint || !vm.authorizationBaseUrl || !vm.callbackUrl || vm.callbackUrl.trim() === '' || !vm.returnMode || (vm.returnMode === 'url' && !vm.returnUrl) || (vm.returnMode === 'cookie' && !vm.returnCookie) || !vm.userAttribute || vm.userAttribute.trim() === '') {
+            if (!vm.siteKey || !vm.apiKey || !vm.accessTokenEndpoint || !vm.authorizationBaseUrl || !vm.callbackUrl || vm.callbackUrl.trim() === '' || !vm.returnMode || (vm.returnMode === 'url' && !vm.returnUrl) || (vm.returnMode === 'cookie' && !vm.returnCookie)) {
                 helperService.errorToast(i18nService.message('label.missingMandatoryProperties'));
                 console.log(vm);
                 return false;
@@ -32,7 +32,6 @@
                 withPKCE: vm.withPKCE,
                 callbackUrl: vm.callbackUrl,
                 profileUrl: vm.profileUrl,
-                userAttribute: vm.userAttribute,
                 returnMode: vm.returnMode
             };
             if (vm.returnMode === 'url') {
@@ -57,7 +56,7 @@
         vm.goToMappers = () => $location.path(`/mappers/${CONNECTOR_SERVICE_NAME}`);
 
         vm.init = () => {
-            settingsService.getConnectorData(CONNECTOR_SERVICE_NAME, ['enabled', 'apiKey', 'apiSecret', 'scope', 'authentication', 'accessTokenEndpoint', 'authorizationBaseUrl', 'withPKCE', 'callbackUrl', 'returnMode', 'returnUrl', 'returnCookie', 'profileUrl', 'userAttribute'])
+            settingsService.getConnectorData(CONNECTOR_SERVICE_NAME, ['enabled', 'apiKey', 'apiSecret', 'scope', 'authentication', 'accessTokenEndpoint', 'authorizationBaseUrl', 'withPKCE', 'callbackUrl', 'returnMode', 'returnUrl', 'returnCookie', 'profileUrl'])
                 .success(data => {
                     if (data && !angular.equals(data, {})) {
                         vm.expandedCard = vm.connectorHasSettings = true;
@@ -74,7 +73,6 @@
                         if (vm.returnMode === 'url') vm.returnUrl = data.returnUrl || '';
                         if (vm.returnMode === 'cookie') vm.returnCookie = data.returnCookie || '';
                         vm.profileUrl = data.profileUrl || '';
-                        vm.userAttribute = data.userAttribute || '';
                     } else {
                         vm.connectorHasSettings = false;
                         vm.enabled = false;
