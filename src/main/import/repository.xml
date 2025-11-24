@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
-   <modules jcr:primaryType="jnt:modules">
-      <jahia-oauth-oidc j:dependencies="default jahia-authentication jahia-oauth"
-                            j:modulePriority="0"
-                            j:moduleType="module"
-                            j:title="jahia-oauth-oidc"
-                            jcr:primaryType="jnt:module">
-         <portlets jcr:primaryType="jnt:portletFolder"/>
-         <files jcr:primaryType="jnt:folder"/>
-         <contents jcr:primaryType="jnt:contentFolder"/>
-         <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
+    <modules jcr:primaryType="jnt:modules">
+        <jahia-oauth-oidc j:dependencies="jahia-authentication jahia-oauth"
+                          j:modulePriority="0"
+                          j:moduleType="module"
+                          j:title="jahia-oauth-oidc"
+                          jcr:primaryType="jnt:module">
+            <portlets jcr:primaryType="jnt:portletFolder"/>
             <files jcr:primaryType="jnt:folder"/>
             <contents jcr:primaryType="jnt:contentFolder"/>
-            <oauth-oidc-view jcr:primaryType="jnt:contentTemplate">
-               <pagecontent jcr:primaryType="jnt:contentList">
-                  <oidcoauthview jcr:primaryType="jcauthnt:oauthOidcView"/>
-               </pagecontent>
-            </oauth-oidc-view>
-         </templates>
-      </jahia-oauth-oidc>
-   </modules>
+            <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
+                <files jcr:primaryType="jnt:folder"/>
+                <contents jcr:primaryType="jnt:contentFolder"/>
+                <oauth-oidc-view jcr:primaryType="jnt:contentTemplate">
+                    <pagecontent jcr:primaryType="jnt:contentList">
+                        <oidcoauthview jcr:primaryType="jcauthnt:oauthOidcView"/>
+                    </pagecontent>
+                </oauth-oidc-view>
+            </templates>
+        </jahia-oauth-oidc>
+    </modules>
 </content>

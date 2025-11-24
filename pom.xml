@@ -69,7 +69,7 @@
     </scm>
 
     <properties>
-        <jahia-depends>default,jahia-authentication,jahia-oauth</jahia-depends>
+        <jahia-depends>jahia-authentication,jahia-oauth</jahia-depends>
     </properties>
 
     <dependencies>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.jahia.modules</groupId>
             <artifactId>jahia-oauth</artifactId>
-            <version>3.3.0</version>
+            <version>3.4.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
