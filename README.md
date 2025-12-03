@@ -25,7 +25,7 @@ You can rely on this mapper [jcr-auth-provider](https://store.jahia.com/contents
 You have to map a special mandatory attribute to **SSO_LOGIN** (Login username).<br/>
 Once logged, you can choose to createa the user at server or site level, or not.
 
-![JCR auth provider mapper](/docs/jahia-authentication.png "JCR auth provider mapper")
+![JCR auth provider mapper](/docs/mapper.png "JCR auth provider mapper")
 
 ## Work in progress
 If you encounter any problem or have any suggestion, please open a Github issue.
