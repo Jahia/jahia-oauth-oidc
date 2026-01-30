@@ -69,6 +69,7 @@
     </scm>
 
     <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
         <jahia-depends>jahia-authentication,jahia-oauth</jahia-depends>
     </properties>
 
