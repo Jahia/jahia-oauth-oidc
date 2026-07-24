@@ -80,7 +80,7 @@
         <dependency>
             <groupId>org.jahia.modules</groupId>
             <artifactId>jahia-oauth</artifactId>
-            <version>4.0.0</version>
+            <version>5.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
