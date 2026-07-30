@@ -1,6 +1,11 @@
 import {defineConfig} from 'cypress';
 
 export default defineConfig({
+    // CI collects JUnit XML (test report) and the mochawesome JSON from ./results.
+    reporter: 'cypress-multi-reporters',
+    reporterOptions: {
+        configFile: 'reporter-config.json'
+    },
     screenshotsFolder: './results/screenshots',
     videosFolder: './results/videos',
     viewportWidth: 1366,

@@ -1,4 +1,8 @@
-# The full test environment: Jahia + the Keycloak identity provider it authenticates against.
+# The full test environment: Jahia, the Keycloak identity provider it authenticates
+# against, and (in CI only) the Cypress runner.
+#
+# Locally you start just the first two — `yarn env:up` — and run Cypress from the host.
+# In CI the jahia-modules-action harness starts all three on this same network.
 #
 # The project name is pinned so this file owns only its own containers: without it the
 # project defaults to the directory name ("tests"), which collides with the other Jahia
@@ -23,11 +27,12 @@ services:
       # the browser URL and the one Jahia uses.
       KC_HTTP_PORT: "8081"
       # Pin the issuer. Keycloak stamps `iss` into the token from the host it was reached
-      # on, and then validates that same `iss` at /userinfo — so with the browser arriving
-      # on localhost and Jahia arriving on the `keycloak` service name, the token would be
-      # minted for one and rejected at the other ("Invalid token issuer"). Fixing the
-      # hostname makes the issuer identical on both paths.
-      KC_HOSTNAME: http://localhost:8081
+      # on, and then validates that same `iss` at /userinfo — so if the browser and Jahia
+      # reach it under different names, the token is minted for one and rejected at the
+      # other ("Invalid token issuer"). This MUST match the URL the browser is redirected
+      # to: localhost when Cypress runs on the host, the service name when it runs in the
+      # cypress container (exported by ci.startup.sh).
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8081}
       # Still serve requests arriving under any other Host header, so Jahia's server-side
       # calls to http://keycloak:8081 are answered normally.
       KC_HOSTNAME_STRICT: "false"
@@ -41,6 +46,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 40
+    networks:
+      - stack
 
   jahia:
     image: ${JAHIA_IMAGE:-ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT}
@@ -65,3 +72,30 @@ services:
       timeout: 10s
       retries: 90
       start_period: 60s
+    networks:
+      - stack
+
+  # CI only — the jahia-modules-action harness builds this image and runs the suite in it.
+  # Not started by `yarn env:up`.
+  cypress:
+    image: ${TESTS_IMAGE:-jahia/jahia-oauth-oidc-test:latest}
+    # https://github.com/cypress-io/cypress/issues/350
+    ipc: host
+    container_name: cypress
+    depends_on:
+      - jahia
+    environment:
+      MANIFEST: ${MANIFEST}
+      SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD:-root1234}
+      JAHIA_URL: http://jahia:8080
+      NEXUS_USERNAME: ${NEXUS_USERNAME}
+      NEXUS_PASSWORD: ${NEXUS_PASSWORD}
+      # In here the browser is on the Docker network, so it reaches the IdP by service
+      # name — and this has to be the value KC_HOSTNAME above was pinned to.
+      KEYCLOAK_BROWSER_URL: ${KEYCLOAK_PUBLIC_URL:-http://keycloak:8081}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8081
+    networks:
+      - stack
+
+networks:
+  stack:

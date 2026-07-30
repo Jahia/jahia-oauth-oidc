@@ -32,6 +32,7 @@ cd tests
 cp .env.example .env      # then paste your base64 license into JAHIA_LICENSE
 yarn install
 yarn env:up               # Jahia + Keycloak, waits until both are healthy
+                          # (the CI-only `cypress` service is not started)
 ```
 
 Jahia then needs the modules the suite exercises. From the repo root:
@@ -128,6 +129,29 @@ returns an empty list, so nothing resolves from a connector-declared schema and 
 falls back to a top-level lookup on the userinfo JSON. The mapping therefore uses the raw
 OIDC claim names — `sub`, `email`, `given_name`, `family_name` — not friendly aliases.
 See `cypress/support/oidc-connector.ts`.
+
+## CI
+
+Three workflows under `.github/workflows/` run this suite through the standard Jahia
+harness (`Jahia/jahia-modules-action`):
+
+| Workflow | Trigger |
+|---|---|
+| `on-code-change.yml` | every pull request — signature, static analysis, build, Sonar, then the suite |
+| `nightly.yml` | 01:00 daily, against both `jahia/jahia-ee:8` and the dev snapshot |
+| `manual-run.yml` | on demand, against any Jahia image |
+
+Each one **builds the module first**. Most Jahia modules also ship a
+`provisioning-manifest-snapshot.yml` that pulls the module from Nexus, but this module
+sets `maven.deploy.skip`, so it is never published — there is only
+`provisioning-manifest-build.yml`, and the module plus `tests/jahia-module` are always
+deployed from the build artifacts. (`jahia-modules-action/build` picks up
+`tests/jahia-module/` automatically.)
+
+In CI the browser runs inside the `cypress` container rather than on your host, so it
+reaches Keycloak by service name. `ci.startup.sh` exports `KEYCLOAK_PUBLIC_URL=http://keycloak:8081`
+for exactly that reason — it drives both the URL Cypress is redirected to and the pinned
+`KC_HOSTNAME`, which must agree (see above).
 
 ## Two things that will look wrong but are deliberate
 
