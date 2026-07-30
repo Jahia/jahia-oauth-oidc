@@ -1,0 +1,96 @@
+{
+  "realm": "jahia-oidc-test",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "clients": [
+    {
+      "clientId": "jahia-oidc-nopkce",
+      "name": "Jahia OIDC connector - PKCE optional",
+      "description": "Confidential client that does NOT require PKCE. Used for the withPKCE=false flows, and accepts client_secret_basic as well as client_secret_post.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "nopkce-client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "fullScopeAllowed": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "attributes": {
+        "pkce.code.challenge.method": "",
+        "post.logout.redirect.uris": "*"
+      }
+    },
+    {
+      "clientId": "jahia-oidc-pkce",
+      "name": "Jahia OIDC connector - PKCE required (S256)",
+      "description": "Confidential client that REQUIRES PKCE with S256. Used for the withPKCE=true flows; a request without a code_challenge is rejected by Keycloak, which is what makes the PKCE assertions meaningful.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "pkce-client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "fullScopeAllowed": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "oidc.user",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "oidc.user@example.org",
+      "firstName": "Odile",
+      "lastName": "Connect",
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "other.user",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "other.user@example.org",
+      "firstName": "Otto",
+      "lastName": "Second",
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

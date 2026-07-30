@@ -1,0 +1,6 @@
+# Installs the JARs uploaded alongside this script as multipart `file` parts.
+# Each bundle is referenced by its bare filename.
+- installOrUpgradeBundle: "jahia-oauth-oidc-2.0.2-SNAPSHOT.jar"
+  autoStart: true
+- installOrUpgradeBundle: "jahia-oauth-oidc-test-module-2.0.2-SNAPSHOT.jar"
+  autoStart: true

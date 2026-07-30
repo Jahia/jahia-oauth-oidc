@@ -1,0 +1,67 @@
+# The full test environment: Jahia + the Keycloak identity provider it authenticates against.
+#
+# The project name is pinned so this file owns only its own containers: without it the
+# project defaults to the directory name ("tests"), which collides with the other Jahia
+# test stacks and would put unrelated containers within reach of `docker compose down`.
+name: jahia-oidc-tests
+
+services:
+  # The OIDC provider. The realm under keycloak/realm-export.json is imported on every
+  # start, so recreating the container resets the IdP to a known state.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: jahia-oidc-keycloak
+    command:
+      - start-dev
+      - --import-realm
+      - --http-port=8081
+    environment:
+      # Console credentials — this is a throwaway local IdP.
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Same port inside and outside the container, so only the host differs between
+      # the browser URL and the one Jahia uses.
+      KC_HTTP_PORT: "8081"
+      # Pin the issuer. Keycloak stamps `iss` into the token from the host it was reached
+      # on, and then validates that same `iss` at /userinfo — so with the browser arriving
+      # on localhost and Jahia arriving on the `keycloak` service name, the token would be
+      # minted for one and rejected at the other ("Invalid token issuer"). Fixing the
+      # hostname makes the issuer identical on both paths.
+      KC_HOSTNAME: http://localhost:8081
+      # Still serve requests arriving under any other Host header, so Jahia's server-side
+      # calls to http://keycloak:8081 are answered normally.
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8081 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
+  jahia:
+    image: ${JAHIA_IMAGE:-ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT}
+    container_name: jahia-oidc-jahia
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    environment:
+      SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD:-root1234}
+      # Base64 of your Jahia EE license — see .env.example.
+      JAHIA_LICENSE: ${JAHIA_LICENSE}
+      JPDA: "true"
+    # Without a bound limit the JVM sizes its heap against the whole Docker VM and can
+    # starve everything else running on it.
+    mem_limit: ${JAHIA_MEM_LIMIT:-4g}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/cms/login >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 90
+      start_period: 60s
