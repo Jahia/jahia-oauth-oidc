@@ -1,0 +1,12 @@
+# Modules the suite needs on the instance, on top of the module under test.
+#
+# jcr-auth-provider is the mapper that turns the OIDC userinfo claims into a Jahia user:
+# without it the OAuth flow completes but nobody is ever logged in.
+- addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/public/@snapshots@noreleases@id=JahiaPublicSnapshots'
+- installBundle:
+    # Range covering the jahia-authentication version declared in the module's pom.xml.
+    - 'mvn:org.jahia.modules/jahia-authentication/[2.0-SNAPSHOT,3.0-SNAPSHOT)'
+    - 'mvn:org.jahia.modules/jahia-oauth/[5.0-SNAPSHOT,6.0-SNAPSHOT)'
+    - 'mvn:org.jahia.modules/jcr-auth-provider/[4.0-SNAPSHOT,5.0-SNAPSHOT)'
+  autoStart: true
+  uninstallPreviousVersion: true

@@ -1,0 +1,8 @@
+# Manifest used by CI. Only the EXTERNAL dependencies are installed from Nexus here —
+# jahia-oauth-oidc and its test module are built by the pipeline and deployed from the
+# build artifacts.
+#
+# There is deliberately no `-snapshot.yml` variant: the module sets maven.deploy.skip,
+# so it is never published to Nexus and cannot be installed by mvn: coordinates. Every
+# workflow therefore builds it first.
+- include: 'dependencies.yml'

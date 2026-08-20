@@ -1,0 +1,49 @@
+# Nightly run of the Cypress suite against both a released Jahia and the dev snapshot.
+#
+# Unlike most Jahia modules there is no "snapshot" manifest that pulls the module from
+# Nexus: jahia-oauth-oidc sets maven.deploy.skip, so it is never published. The module and
+# its test module are therefore built here first and deployed from the build artifacts.
+name: Nightly Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  build:
+    name: Build Module
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jahia/jahia-docker-mvn-cache:11-jdk-noble-mvn-loaded
+      credentials:
+        username: ${{ secrets.GH_PACKAGES_USERNAME }}
+        password: ${{ secrets.GH_PACKAGES_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jahia/jahia-modules-action/build@v2
+        with:
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+
+  integration-tests:
+    needs: build
+    strategy:
+      matrix:
+        include:
+          - name: Release
+            jahia_image: jahia/jahia-ee:8
+            artifact_prefix: oauth-oidc-rl
+          - name: Snapshot
+            jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
+            artifact_prefix: oauth-oidc-sn
+    uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
+    secrets: inherit
+    with:
+      jahia_image: ${{ matrix.jahia_image }}
+      module_id: jahia-oauth-oidc
+      should_skip_testrail: true
+      pagerduty_skip_notification: true
+      provisioning_manifest: provisioning-manifest-build.yml
+      artifact_prefix: ${{ matrix.artifact_prefix }}
+      module_branch: ${{ github.ref }}

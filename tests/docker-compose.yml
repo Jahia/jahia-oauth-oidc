@@ -1,0 +1,101 @@
+# The full test environment: Jahia, the Keycloak identity provider it authenticates
+# against, and (in CI only) the Cypress runner.
+#
+# Locally you start just the first two — `yarn env:up` — and run Cypress from the host.
+# In CI the jahia-modules-action harness starts all three on this same network.
+#
+# The project name is pinned so this file owns only its own containers: without it the
+# project defaults to the directory name ("tests"), which collides with the other Jahia
+# test stacks and would put unrelated containers within reach of `docker compose down`.
+name: jahia-oidc-tests
+
+services:
+  # The OIDC provider. The realm under keycloak/realm-export.json is imported on every
+  # start, so recreating the container resets the IdP to a known state.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: jahia-oidc-keycloak
+    command:
+      - start-dev
+      - --import-realm
+      - --http-port=8081
+    environment:
+      # Console credentials — this is a throwaway local IdP.
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Same port inside and outside the container, so only the host differs between
+      # the browser URL and the one Jahia uses.
+      KC_HTTP_PORT: "8081"
+      # Pin the issuer. Keycloak stamps `iss` into the token from the host it was reached
+      # on, and then validates that same `iss` at /userinfo — so if the browser and Jahia
+      # reach it under different names, the token is minted for one and rejected at the
+      # other ("Invalid token issuer"). This MUST match the URL the browser is redirected
+      # to: localhost when Cypress runs on the host, the service name when it runs in the
+      # cypress container (exported by ci.startup.sh).
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8081}
+      # Still serve requests arriving under any other Host header, so Jahia's server-side
+      # calls to http://keycloak:8081 are answered normally.
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8081 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks:
+      - stack
+
+  jahia:
+    image: ${JAHIA_IMAGE:-ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT}
+    container_name: jahia-oidc-jahia
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    environment:
+      SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD:-root1234}
+      # Base64 of your Jahia EE license — see .env.example.
+      JAHIA_LICENSE: ${JAHIA_LICENSE}
+      JPDA: "true"
+    # Without a bound limit the JVM sizes its heap against the whole Docker VM and can
+    # starve everything else running on it.
+    mem_limit: ${JAHIA_MEM_LIMIT:-4g}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/cms/login >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 90
+      start_period: 60s
+    networks:
+      - stack
+
+  # CI only — the jahia-modules-action harness builds this image and runs the suite in it.
+  # Not started by `yarn env:up`.
+  cypress:
+    image: ${TESTS_IMAGE:-jahia/jahia-oauth-oidc-test:latest}
+    # https://github.com/cypress-io/cypress/issues/350
+    ipc: host
+    container_name: cypress
+    depends_on:
+      - jahia
+    environment:
+      MANIFEST: ${MANIFEST}
+      SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD:-root1234}
+      JAHIA_URL: http://jahia:8080
+      NEXUS_USERNAME: ${NEXUS_USERNAME}
+      NEXUS_PASSWORD: ${NEXUS_PASSWORD}
+      # In here the browser is on the Docker network, so it reaches the IdP by service
+      # name — and this has to be the value KC_HOSTNAME above was pinned to.
+      KEYCLOAK_BROWSER_URL: ${KEYCLOAK_PUBLIC_URL:-http://keycloak:8081}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8081
+    networks:
+      - stack
+
+networks:
+  stack:
