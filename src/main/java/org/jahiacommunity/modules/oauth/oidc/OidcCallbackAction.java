@@ -7,6 +7,7 @@ import org.jahia.bin.ActionResult;
 import org.jahia.bin.Render;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.SettingsService;
+import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.render.RenderContext;
@@ -47,9 +48,15 @@ public class OidcCallbackAction extends Action {
 
     @Override
     public ActionResult doExecute(HttpServletRequest httpServletRequest, RenderContext renderContext, Resource resource, JCRSessionWrapper session, Map<String, List<String>> parameters, URLResolver urlResolver) {
+        if (parameters.containsKey(JahiaOAuthConstants.STATE) && !getRequiredParameter(parameters, JahiaOAuthConstants.STATE).equals(httpServletRequest.getSession(false).getId())) {
+            logger.error("Invalid {} parameter {}, different as sessionId {}", JahiaOAuthConstants.STATE, getRequiredParameter(parameters, JahiaOAuthConstants.STATE), httpServletRequest.getSession(false).getId());
+            return ActionResult.BAD_REQUEST;
+        }
+
         if (parameters.containsKey("code")) {
             final String token = getRequiredParameter(parameters, "code");
             if (StringUtils.isBlank(token)) {
+                logger.error("Token is blank");
                 return ActionResult.BAD_REQUEST;
             }
 
@@ -65,12 +72,14 @@ public class OidcCallbackAction extends Action {
                     String cookieName = connectorConfig.getProperty("returnCookie");
                     if (StringUtils.isNotBlank(cookieName)) {
                         // read cookie
-                        Optional<String> cookieRedirect = Optional.ofNullable(httpServletRequest.getCookies()).flatMap(cookies -> Arrays.stream(cookies)
+                        String cookieRedirect = Optional.ofNullable(httpServletRequest.getCookies()).flatMap(cookies -> Arrays.stream(cookies)
                                 .filter(cookie -> cookie.getName().equals(cookieName))
                                 .map(Cookie::getValue)
-                                .findFirst());
-                        if (cookieRedirect.isPresent()) {
-                            returnUrl = cookieRedirect.get();
+                                .findFirst()).orElse(null);
+                        if (!StringUtils.startsWithIgnoreCase(cookieRedirect, "/")) {
+                            logger.error("Invalid cookie {}={}", cookieName, cookieRedirect);
+                        } else {
+                            returnUrl = cookieRedirect;
                         }
                     }
                 }

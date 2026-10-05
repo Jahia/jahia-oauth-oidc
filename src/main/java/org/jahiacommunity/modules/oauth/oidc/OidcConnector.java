@@ -16,25 +16,19 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component(service = {OidcConnector.class, OAuthConnectorService.class, ConnectorService.class}, property = {JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + OidcConnector.KEY}, immediate = true)
 public class OidcConnector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(OidcConnector.class);
 
     public static final String KEY = "OidcConnector";
-
-    private final Map<String, AuthorizationUrlBuilder> authorizationUrlBuilders;
-
-    public OidcConnector() {
-        authorizationUrlBuilders = new HashMap<>();
-    }
+    private static final String PKCE_BUILDER_ATTR = OidcConnector.class.getName() + ".authorizationUrlBuilder";
 
     @Reference
     private JahiaOAuthService jahiaOAuthService;
@@ -94,10 +88,10 @@ public class OidcConnector implements OAuthConnectorService {
     }
 
     public void setAuthorizationUrlBuilder(AuthorizationUrlBuilder authorizationUrlBuilder) {
-        authorizationUrlBuilders.put(RequestContextHolder.getRequestAttributes().getSessionId(), authorizationUrlBuilder);
+        RequestContextHolder.getRequestAttributes().setAttribute(PKCE_BUILDER_ATTR, authorizationUrlBuilder, RequestAttributes.SCOPE_SESSION);
     }
 
     public AuthorizationUrlBuilder getAuthorizationUrlBuilder() {
-        return authorizationUrlBuilders.get(RequestContextHolder.getRequestAttributes().getSessionId());
+        return (AuthorizationUrlBuilder) RequestContextHolder.getRequestAttributes().getAttribute(PKCE_BUILDER_ATTR, RequestAttributes.SCOPE_SESSION);
     }
 }
