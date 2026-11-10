@@ -4,11 +4,12 @@
 # Locally you start just the first two — `yarn env:up` — and run Cypress from the host.
 # In CI the jahia-modules-action harness starts all three on this same network.
 #
-# The project name is pinned so this file owns only its own containers: without it the
-# project defaults to the directory name ("tests"), which collides with the other Jahia
-# test stacks and would put unrelated containers within reach of `docker compose down`.
-name: jahia-oidc-tests
-
+# The project name is pinned by COMPOSE_PROJECT_NAME in .env / .env.example (read by
+# docker compose v2, and exported by set-env.sh for the docker-compose v1 binary the CI
+# runner uses) — a top-level `name:` key would be rejected by docker-compose v1. Without
+# it the project would default to the directory name ("tests"), which collides with the
+# other Jahia test stacks and would put unrelated containers within reach of
+# `docker compose down`.
 services:
   # The OIDC provider. The realm under keycloak/realm-export.json is imported on every
   # start, so recreating the container resets the IdP to a known state.
