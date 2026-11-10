@@ -68,9 +68,11 @@ export function profileUrl(): string {
  * origin, so every interaction with its pages has to happen inside cy.origin().
  */
 export function loginAtKeycloak(username: string, password: string): void {
-    cy.origin(browserBaseUrl(), {args: {username, password}}, ({username, password}) => {
-        cy.get('#username').should('be.visible').clear().type(username);
-        cy.get('#password').clear().type(password, {log: false});
+    cy.origin(browserBaseUrl(), {args: {username, password}}, ({username: user, password: secret}) => {
+        cy.get('#username').should('be.visible').clear();
+        cy.get('#username').type(user);
+        cy.get('#password').clear();
+        cy.get('#password').type(secret, {log: false});
         cy.get('#kc-login').click();
     });
 }

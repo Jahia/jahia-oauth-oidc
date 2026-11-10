@@ -13,3 +13,9 @@ target
 
 # Jahia DX Studio
 repository.xml.generated
+
+# Node
+node_modules
+
+# Cypress run output
+tests/results
