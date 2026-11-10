@@ -27,7 +27,7 @@ export interface OidcConnectorOptions {
     clientSecret: string;
     /** Drives OidcApi -> OidcService, which calls initPKCE() and adds code_challenge. */
     withPKCE: boolean;
-    /** basic -> HttpBasicAuthenticationScheme, body -> RequestBodyAuthenticationScheme. */
+    /** Client authentication scheme: basic -> HttpBasicAuthenticationScheme, body -> RequestBodyAuthenticationScheme. */
     authentication: ClientAuthentication;
     /** Page carrying the connect + callback actions. Defaults to the 'oidc' test page. */
     page?: string;
@@ -44,7 +44,7 @@ export interface OidcConnectorOptions {
 }
 
 /**
- * userinfo field -> Jahia user property.
+ * Userinfo field -> Jahia user property.
  *
  * OidcConnector.getAvailableProperties() returns an empty list, so nothing is resolved
  * from a connector-declared schema: jahia-oauth falls back to a top-level lookup on the

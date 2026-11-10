@@ -31,8 +31,8 @@ services:
       # on, and then validates that same `iss` at /userinfo — so if the browser and Jahia
       # reach it under different names, the token is minted for one and rejected at the
       # other ("Invalid token issuer"). This MUST match the URL the browser is redirected
-      # to: localhost when Cypress runs on the host, the service name when it runs in the
-      # cypress container (exported by ci.startup.sh).
+      # to: localhost when Cypress runs on the host, the network alias when it runs in
+      # the cypress container (exported by ci.startup.sh).
       KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8081}
       # Still serve requests arriving under any other Host header, so Jahia's server-side
       # calls to http://keycloak:8081 are answered normally.
@@ -48,7 +48,12 @@ services:
       timeout: 5s
       retries: 40
     networks:
-      - stack
+      stack:
+        # Reached by the browser under this alias, not by service name. It shares its
+        # registrable domain (jahia.test) with the alias of the jahia service below —
+        # see the comment on the cypress service for why that is load-bearing.
+        aliases:
+          - keycloak.jahia.test
 
   jahia:
     image: ${JAHIA_IMAGE:-ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT}
@@ -74,7 +79,9 @@ services:
       retries: 90
       start_period: 60s
     networks:
-      - stack
+      stack:
+        aliases:
+          - jahia.test
 
   # CI only — the jahia-modules-action harness builds this image and runs the suite in it.
   # Not started by `yarn env:up`.
@@ -88,12 +95,20 @@ services:
     environment:
       MANIFEST: ${MANIFEST}
       SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD:-root1234}
-      JAHIA_URL: http://jahia:8080
+      # Both services are reached under one registrable domain, jahia.test, so the POST
+      # of Keycloak's login form is same-site and its auth-session cookie is sent with
+      # it. Over plain HTTP Keycloak cannot emit SameSite=None; Secure on that cookie,
+      # so it falls back to SameSite=Lax — which a browser withholds from a cross-site
+      # POST. Reaching the two by bare service name costs exactly that, and every login
+      # then fails with LOGIN_ERROR error="cookie_not_found". Locally the browser
+      # reaches both on localhost, which is same-site for the same reason: the site is
+      # the registrable domain, and the port plays no part in it.
+      JAHIA_URL: http://jahia.test:8080
       NEXUS_USERNAME: ${NEXUS_USERNAME}
       NEXUS_PASSWORD: ${NEXUS_PASSWORD}
-      # In here the browser is on the Docker network, so it reaches the IdP by service
-      # name — and this has to be the value KC_HOSTNAME above was pinned to.
-      KEYCLOAK_BROWSER_URL: ${KEYCLOAK_PUBLIC_URL:-http://keycloak:8081}
+      # In here the browser is on the Docker network, so it reaches the IdP by its
+      # network alias — and this has to be the value KC_HOSTNAME above was pinned to.
+      KEYCLOAK_BROWSER_URL: ${KEYCLOAK_PUBLIC_URL:-http://keycloak.jahia.test:8081}
       KEYCLOAK_INTERNAL_URL: http://keycloak:8081
     networks:
       - stack

@@ -3,11 +3,16 @@
 source ./set-env.sh
 
 # In CI the browser runs inside the `cypress` container, on the same Docker network as
-# Keycloak — so it reaches the IdP by service name rather than on localhost. This drives
-# BOTH the URL Cypress is redirected to AND Keycloak's pinned KC_HOSTNAME, which have to
-# agree or the token's `iss` is rejected at /userinfo. Locally the browser runs on the
-# host and the compose default (http://localhost:8081) applies instead.
-export KEYCLOAK_PUBLIC_URL=http://keycloak:8081
+# Keycloak — so it reaches the IdP by a network alias rather than on localhost. This
+# drives BOTH the URL Cypress is redirected to AND Keycloak's pinned KC_HOSTNAME, which
+# have to agree or the token's `iss` is rejected at /userinfo. Locally the browser runs
+# on the host and the compose default (http://localhost:8081) applies instead.
+#
+# The alias is a subdomain of jahia.test, which the jahia service also answers to, so
+# the browser sees both under one registrable domain. Without that the login form POST
+# is cross-site, Keycloak's SameSite=Lax auth-session cookie is withheld, and every
+# interactive login fails with LOGIN_ERROR error="cookie_not_found".
+export KEYCLOAK_PUBLIC_URL=http://keycloak.jahia.test:8081
 
 echo " == Printing the most important environment variables"
 echo " MANIFEST: ${MANIFEST}"
