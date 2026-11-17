@@ -52,6 +52,12 @@
       "homepage": "La page d'accueil du site",
       "url": "Une URL",
       "cookie": "L'URL contenue dans un cookie"
+    },
+    "loginPage": {
+      "title": "Page de connexion",
+      "enabled": "Envoyer vers cette page de connexion les visiteurs qui doivent se connecter sur une page ou un fichier protégé",
+      "helper": "S'applique aux pages et fichiers publiés. Le mode édition et l'administration gardent le login Jahia.",
+      "noProvider": "Aucun fournisseur n'est activé : les visiteurs gardent le login Jahia tant qu'aucun ne l'est."
     }
   }
 }

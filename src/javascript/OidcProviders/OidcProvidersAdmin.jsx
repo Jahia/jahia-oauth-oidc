@@ -4,6 +4,7 @@ import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {ChevronDown, ChevronRight, Chip, Header, LayoutContent, Typography} from '@jahia/moonstone';
 import {GET_PROVIDERS} from './OidcProviders.gql';
+import {LoginPageSettings} from './LoginPageSettings';
 import {NewProviderForm} from './NewProviderForm';
 import {ProviderForm} from './ProviderForm';
 import styles from './OidcProviders.css';
@@ -29,6 +30,13 @@ export const OidcProvidersAdmin = () => {
             header={<Header title={t('label.title')} contentType={t('label.description')}/>}
             content={(
                 <div className={styles.content} data-test="oidc-providers-admin">
+                    {data && (
+                        <LoginPageSettings siteKey={siteKey}
+                                           language={language}
+                                           isEnabled={data.oidcLoginPageEnabled}
+                                           hasEnabledProvider={providers.some(provider => provider.enabled)}
+                                           onChanged={refetch}/>
+                    )}
                     <NewProviderForm siteKey={siteKey}
                                      existingIds={providers.map(provider => provider.id)}
                                      onCreated={onCreated}/>

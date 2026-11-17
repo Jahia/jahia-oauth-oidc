@@ -52,6 +52,12 @@
       "homepage": "The site homepage",
       "url": "A URL",
       "cookie": "The URL held in a cookie"
+    },
+    "loginPage": {
+      "title": "Login page",
+      "enabled": "Send visitors who must log in on a protected page or file to this login page",
+      "helper": "Applies to live pages and files. Edit mode and the administration keep the Jahia login.",
+      "noProvider": "No provider is enabled: visitors keep the Jahia login until one is."
     }
   }
 }

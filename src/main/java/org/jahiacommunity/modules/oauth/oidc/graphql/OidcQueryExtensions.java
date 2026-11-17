@@ -26,6 +26,14 @@ public final class OidcQueryExtensions {
     }
 
     @GraphQLField
+    @GraphQLNonNull
+    @GraphQLDescription("Whether a visitor who needs to log in on a live page or file of the site goes to its OIDC login page. Requires canSetupJahiaAuth on the site.")
+    public static Boolean oidcLoginPageEnabled(@GraphQLName("siteKey") @GraphQLNonNull String siteKey) {
+        OidcGraphQLSupport.checkCanSetup(siteKey);
+        return OidcGraphQLSupport.registry().isLoginPageEnabled(siteKey);
+    }
+
+    @GraphQLField
     @GraphQLDescription("One OIDC provider of a site, or null. Requires canSetupJahiaAuth on the site.")
     public static GqlOidcProvider oidcProvider(@GraphQLName("siteKey") @GraphQLNonNull String siteKey,
                                                @GraphQLName("providerId") @GraphQLNonNull String providerId) {

@@ -55,6 +55,25 @@
                         </c:otherwise>
                     </c:choose>
                     <a class="oidc-login-page__jahia" href="${contextPath}/cms/login"><fmt:message key="oidcLoginPage.jahiaAccount"/></a>
+                    <%-- The page the visitor asked for comes in ?redirect=, which the HTML cache does not key on:
+                         it is copied in the browser, and .oidc-connect.do validates it. --%>
+                    <script>
+                        (function () {
+                            var redirect = new URLSearchParams(window.location.search).get('redirect');
+                            if (!redirect) {
+                                return;
+                            }
+                            document.querySelectorAll('.oidc-login-page form').forEach(function (form) {
+                                var input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'redirect';
+                                input.value = redirect;
+                                form.appendChild(input);
+                            });
+                            var jahiaLogin = document.querySelector('.oidc-login-page__jahia');
+                            jahiaLogin.href = jahiaLogin.href + '?redirect=' + encodeURIComponent(redirect);
+                        })();
+                    </script>
                 </div>
             </div>
         </div>

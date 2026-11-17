@@ -14,6 +14,7 @@ Jahia exchanges it server-side for a real token before calling `/userinfo`.
 | `oidc-callback-errors.cy.ts` | `.oidc-callback.do` on its own: missing code, blank code, invalid code. |
 | `oidc-multiple-providers.cy.ts` | Three providers on one site, one of them disabled: the login page `/sites/<key>.oidc-login.html` lists the enabled ones in their order, a login goes through each of them, and `.oidc-connect.do` refuses a disabled, unknown, malformed or ambiguous provider. |
 | `oidc-provider-administration.cy.ts` | Administration > Sites > OpenID Connect: add providers, refuse a used or malformed id, refuse an invalid callback URL, save the settings of one without sending its secret back, delete another. Plus the card of the Jahia Authentication settings, which lists the providers and links to their mappers. |
+| `oidc-protected-resources.cy.ts` | A guest who asks for a protected page lands on the OIDC login page of the site and comes back to the page once logged in; a site that did not enable the login page keeps the 401 of Jahia. It relies on `protectedResourceAccessStrategy=authorizationError`, which `docker-compose.yml` sets through `JAHIA_PROPERTIES`; against another Jahia, set it in its `jahia.properties`. |
 | `oidc-graphql-api.cy.ts` | The GraphQL API behind that page: a guest is refused, invalid settings are refused, an empty secret keeps the stored one, and the schema has no field that returns it. |
 
 The PKCE cases run against a Keycloak client configured to **require** S256, so they

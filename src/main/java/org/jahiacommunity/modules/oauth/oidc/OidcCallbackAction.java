@@ -76,7 +76,14 @@ public class OidcCallbackAction extends Action {
                 return ActionResult.BAD_REQUEST;
             }
             jahiaOAuthService.extractAccessTokenAndExecuteMappers(connectorConfig, token, sessionId);
-            String returnUrl = returnUrl(connectorConfig, httpServletRequest);
+            // The page the visitor asked for, when the login started from it, wins over the return mode.
+            String returnUrl = httpSession == null ? null : (String) httpSession.getAttribute(OidcConnectAction.REDIRECT_SESSION_ATTRIBUTE);
+            if (httpSession != null) {
+                httpSession.removeAttribute(OidcConnectAction.REDIRECT_SESSION_ATTRIBUTE);
+            }
+            if (StringUtils.isBlank(returnUrl)) {
+                returnUrl = returnUrl(connectorConfig, httpServletRequest);
+            }
             if (StringUtils.isBlank(returnUrl)) {
                 // by default redirect to site homepage
                 returnUrl = jcrTemplate.doExecuteWithSystemSessionAsUser(null, renderContext.getWorkspace(), renderContext.getMainResourceLocale(), systemSession ->

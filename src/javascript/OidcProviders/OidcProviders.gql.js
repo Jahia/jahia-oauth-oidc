@@ -25,6 +25,7 @@ const PROVIDER_FIELDS = gql`
 
 export const GET_PROVIDERS = gql`
     query oidcProviders($siteKey: String!) {
+        oidcLoginPageEnabled(siteKey: $siteKey)
         oidcProviders(siteKey: $siteKey) {
             ...OidcProviderFields
         }
@@ -53,5 +54,11 @@ export const SAVE_PROVIDER = gql`
 export const DELETE_PROVIDER = gql`
     mutation deleteOidcProvider($siteKey: String!, $providerId: String!) {
         deleteOidcProvider(siteKey: $siteKey, providerId: $providerId)
+    }
+`;
+
+export const SET_LOGIN_PAGE = gql`
+    mutation setOidcLoginPageEnabled($siteKey: String!, $enabled: Boolean!) {
+        setOidcLoginPageEnabled(siteKey: $siteKey, enabled: $enabled)
     }
 `;

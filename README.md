@@ -49,6 +49,13 @@ Version 3.0 breaks the following:
 
 ![OIDC login page](/docs/oidc-login.png "OIDC login page")
 
+### Protected pages and files
+With **Send visitors who must log in on a protected page or file to this login page**, at the top of **Administration > Sites > OpenID Connect**, a guest who asks for a protected live page or file of the site lands on its login page, and comes back to that page or file once logged in. Edit mode and the administration keep the Jahia login.
+
+This needs `protectedResourceAccessStrategy=authorizationError` in `jahia.properties`. With the default, `silent`, Jahia answers a guest with a 404 for a protected resource, to hide that it exists, and never asks for a login. The module registers a `LoginUrlProvider`, which Jahia's error handling asks on each 401.
+
+The page to come back to travels as `?redirect=`. Only a path of the same server is kept, so the login cannot send a visitor to another site.
+
 A login starts at `<page>.oidc-connect.do?provider=<id>`. Without `provider`, it uses the provider `default` when the site has one, otherwise the only enabled provider. An unknown, disabled or ambiguous provider is refused with a 400.
 
 ## Mapper

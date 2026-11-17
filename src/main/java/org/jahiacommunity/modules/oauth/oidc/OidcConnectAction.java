@@ -30,6 +30,10 @@ public class OidcConnectAction extends Action {
      */
     static final String CONNECTOR_SESSION_ATTRIBUTE = OidcConnectAction.class.getName() + ".connectorName";
     static final String PROVIDER_PARAMETER = "provider";
+    /**
+     * The page the visitor asked for before logging in, read back by {@link OidcCallbackAction}.
+     */
+    static final String REDIRECT_SESSION_ATTRIBUTE = OidcConnectAction.class.getName() + ".redirect";
 
     @Reference
     private OidcProviderRegistry oidcProviderRegistry;
@@ -53,6 +57,12 @@ public class OidcConnectAction extends Action {
         }
         HttpSession httpSession = httpServletRequest.getSession();
         httpSession.setAttribute(CONNECTOR_SESSION_ATTRIBUTE, connectorConfig.get().getConnectorName());
+        String redirect = OidcRedirects.toLocalPath(httpServletRequest, getParameter(parameters, OidcRedirects.PARAMETER));
+        if (redirect == null) {
+            httpSession.removeAttribute(REDIRECT_SESSION_ATTRIBUTE);
+        } else {
+            httpSession.setAttribute(REDIRECT_SESSION_ATTRIBUTE, redirect);
+        }
         return new ActionResult(HttpServletResponse.SC_OK, jahiaOAuthService.getAuthorizationUrl(connectorConfig.get(), httpSession.getId()), true, null);
     }
 }

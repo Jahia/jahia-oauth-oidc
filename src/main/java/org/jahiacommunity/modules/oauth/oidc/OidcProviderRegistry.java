@@ -49,6 +49,10 @@ public class OidcProviderRegistry implements ConfigurationListener {
     private static final Logger logger = LoggerFactory.getLogger(OidcProviderRegistry.class);
     private static final String AUTH_FACTORY_PID = "org.jahia.modules.auth";
     private static final String CACHE_DEPENDENCY_SUFFIX = "oidc-login-providers";
+    /**
+     * A top-level key of the configuration of the site: jahia-authentication reads a key with a dot as a connector.
+     */
+    private static final String LOGIN_PAGE_PROPERTY = "oidcLoginPage";
     private static final Comparator<OidcProvider> PROVIDER_ORDER = Comparator.comparingInt(OidcProvider::getOrder)
             .thenComparing(OidcProvider::getLabel, String.CASE_INSENSITIVE_ORDER);
 
@@ -280,6 +284,27 @@ public class OidcProviderRegistry implements ConfigurationListener {
         Dictionary<String, Object> properties = configuration.getProperties();
         removed.forEach(name -> properties.remove(connectorName + "." + name));
         values.forEach((name, value) -> properties.put(connectorName + "." + name, value));
+        configuration.update(properties);
+    }
+
+    /**
+     * @return whether a visitor who needs to log in on the site, on a 401, is sent to its OIDC login page
+     */
+    public boolean isLoginPageEnabled(String siteKey) {
+        return authConfigurations(siteKey).stream().findFirst()
+                .map(configuration -> configuration.getProperties().get(LOGIN_PAGE_PROPERTY))
+                .map(value -> Boolean.parseBoolean(value.toString()))
+                .orElse(Boolean.FALSE);
+    }
+
+    /**
+     * Sends, or stops sending, a visitor who needs to log in on the site to its OIDC login page.
+     */
+    public void setLoginPageEnabled(String siteKey, boolean enabled) throws IOException {
+        Configuration configuration = authConfigurations(siteKey).stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Add a provider to the site first"));
+        Dictionary<String, Object> properties = configuration.getProperties();
+        properties.put(LOGIN_PAGE_PROPERTY, Boolean.toString(enabled));
         configuration.update(properties);
     }
 
