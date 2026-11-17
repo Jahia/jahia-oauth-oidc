@@ -47,8 +47,8 @@ describe('OIDC provider administration', () => {
         cy.get('[data-test="oidc-add-provider"]').should('be.disabled');
         cy.get('#oidc-new-provider-id').clear();
 
-        // Open the first provider. The server refuses an invalid callback URL.
-        cy.get(card('first')).find('button').first().click();
+        // A provider that is off shows its settings until they are complete. The server refuses an invalid callback URL.
+        cy.get(card('first')).find('[data-test="oidc-provider-form"]').should('be.visible');
         cy.get(card('first')).within(() => {
             cy.get(field('first', 'clientId')).type('client');
             cy.get(field('first', 'clientSecret')).type('secret');
@@ -61,12 +61,14 @@ describe('OIDC provider administration', () => {
             cy.get(field('first', 'callbackUrl')).clear();
             cy.get(field('first', 'callbackUrl')).type(`${Cypress.config('baseUrl')}${sitePath(siteKey)}.oidc-callback.do`);
             cy.get('[data-test="oidc-save-provider"]').click();
-            cy.get('[data-test="oidc-provider-saved"]').should('be.visible');
         });
+        // Complete and off, the provider hides its settings; turned on, it shows them again.
+        cy.get(card('first')).find('[data-test="oidc-provider-form"]').should('not.be.visible');
 
         // A configured provider is turned on from its header; an incomplete one cannot be.
         cy.get(card('first')).find('[data-test="oidc-provider-enabled"]').click();
         cy.get(card('first')).find('[data-test="oidc-provider-enabled"] input').should('be.checked');
+        cy.get(card('first')).find('[data-test="oidc-provider-form"]').should('be.visible');
         cy.get(card('second')).find('[data-test="oidc-provider-enabled"]').click();
         cy.get(card('second')).find('[data-test="oidc-provider-enabled-error"]').should('contain', 'client ID');
 
@@ -75,12 +77,10 @@ describe('OIDC provider administration', () => {
         cy.get('[data-test="oidc-provider-card"]').should('have.length', 2);
         cy.get(card('first')).find('[data-test="oidc-provider-enabled"] input').should('be.checked');
         cy.get(card('second')).find('[data-test="oidc-provider-enabled"] input').should('not.be.checked');
-        cy.get(card('first')).find('button').first().click();
         cy.get(field('first', 'clientId')).should('have.value', 'client');
         cy.get(field('first', 'clientSecret')).should('have.value', '');
         cy.get(card('first')).should('contain', 'A secret is stored');
 
-        cy.get(card('second')).find('button').first().click();
         cy.get(card('second')).find('[data-test="oidc-delete-provider"]').click();
         cy.get(card('second')).should('not.exist');
         cy.reload();

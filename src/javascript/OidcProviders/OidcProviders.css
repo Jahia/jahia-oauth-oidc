@@ -89,9 +89,4 @@
     align-items: center;
     gap: var(--spacing-small, 8px);
     padding: var(--spacing-small, 8px) 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
 }

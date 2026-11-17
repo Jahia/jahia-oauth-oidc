@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {useQuery} from '@apollo/client';
 import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
@@ -10,19 +10,23 @@ import {ProviderEnabledSwitch} from './ProviderEnabledSwitch';
 import {ProviderForm} from './ProviderForm';
 import styles from './OidcProviders.css';
 
+// The settings that turning a provider on requires, as the server checks them
+const isComplete = provider => [provider.clientId, provider.accessTokenEndpoint, provider.authorizationBaseUrl, provider.callbackUrl]
+    .every(value => Boolean(value?.trim()));
+
 /**
- * Site settings > OpenID Connect: add the providers of the site, configure each one, and delete them.
+ * Site settings > OpenID Connect: add the providers of the site, configure each one, and delete them. The settings
+ * of a provider show while it is on, and while it still lacks what turning it on requires.
  */
 export const OidcProvidersAdmin = () => {
     const {t} = useTranslation('jahia-oauth-oidc');
     const siteKey = useSelector(state => state.site);
     const language = useSelector(state => state.language);
     const {data, loading, error, refetch} = useQuery(GET_PROVIDERS, {variables: {siteKey}, fetchPolicy: 'network-only'});
-    const [expandedId, setExpandedId] = useState(null);
     const providers = data?.oidcProviders || [];
 
-    const onCreated = providerId => refetch().then(() => setExpandedId(providerId));
-    const onDeleted = () => refetch().then(() => setExpandedId(null));
+    const onCreated = () => refetch();
+    const onDeleted = () => refetch();
 
     return (
         <LayoutContent
@@ -44,24 +48,18 @@ export const OidcProvidersAdmin = () => {
                     {error && <Typography className={styles.error}>{error.message}</Typography>}
                     {data && providers.length === 0 && <Typography>{t('label.none')}</Typography>}
                     {providers.map(provider => {
-                        const isExpanded = expandedId === provider.id;
+                        const isShown = provider.enabled || !isComplete(provider);
                         return (
                             <div key={provider.id} data-test="oidc-provider-card" data-provider={provider.id}>
-                                {/* Moonstone's Collapsible takes a text label only: the header holds the switch too */}
                                 <div className={styles.providerHeaderRow}>
                                     <ProviderEnabledSwitch siteKey={siteKey} provider={provider} onChanged={refetch}/>
-                                    <button type="button"
-                                            className={styles.providerHeader}
-                                            aria-expanded={isExpanded}
-                                            aria-controls={`oidc-provider-${provider.id}`}
-                                            onClick={() => setExpandedId(isExpanded ? null : provider.id)}
-                                    >
+                                    <div className={styles.providerHeader}>
                                         <Typography variant="heading" weight="bold">{provider.label}</Typography>
                                         <Typography variant="caption">{provider.id}</Typography>
-                                    </button>
+                                    </div>
                                 </div>
-                                {/* Kept mounted while collapsed, so that unsaved changes survive */}
-                                <div id={`oidc-provider-${provider.id}`} hidden={!isExpanded}>
+                                {/* Kept mounted while hidden, so that unsaved changes survive */}
+                                <div id={`oidc-provider-${provider.id}`} hidden={!isShown}>
                                     <ProviderForm siteKey={siteKey}
                                                   language={language}
                                                   provider={provider}

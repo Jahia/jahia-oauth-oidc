@@ -8,7 +8,7 @@ Open **Administration > Sites > OpenID Connect** (`/jahia/administration/<siteKe
 
 * **Add a provider** takes an id and a label. The id is 1 to 32 lowercase letters, digits or inner hyphens, and it names the provider in the login URL. The provider is created disabled.
 * The switch in front of the name of a provider turns it on or off at once, and leaves its other settings as they are. A provider whose settings are incomplete cannot be turned on.
-* A click on the name of a provider opens its settings, with its **Save**, **Mappers** and **Delete** buttons.
+* A provider shows its settings, with its **Save**, **Mappers** and **Delete** buttons, while it is on, and while it still lacks its client ID or one of its required URLs. A provider that is off and complete shows its name only.
 * **Label**, **Logo URL** and **Order** set how the login page shows the provider. The logo URL is an absolute http(s) URL or a path that starts with `/`.
 
 ![OpenID Connect administration](/docs/oidc-providers-admin.png "OpenID Connect administration")
