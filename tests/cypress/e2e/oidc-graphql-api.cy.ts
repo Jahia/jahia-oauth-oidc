@@ -5,7 +5,7 @@ import {sitePath} from '../support/urls';
 
 /**
  * The GraphQL API behind the administration page: oidcProviders, createOidcProvider,
- * saveOidcProvider and deleteOidcProvider.
+ * saveOidcProvider, setOidcProviderEnabled and deleteOidcProvider.
  */
 describe('OIDC providers GraphQL API', () => {
     let siteKey: string;
@@ -78,6 +78,23 @@ describe('OIDC providers GraphQL API', () => {
             variables: {siteKey},
             errorPolicy: 'all'
         }).its('errors.0.message').should('contain', 'clientSecret');
+    });
+
+    it('Should turn a provider on or off and keep its settings', () => {
+        const setEnabled = (enabled: boolean) => cy.apollo({
+            mutation: gql`mutation($siteKey: String!, $enabled: Boolean!) {
+                setOidcProviderEnabled(siteKey: $siteKey, providerId: "api", enabled: $enabled) { enabled label }
+            }`,
+            variables: {siteKey, enabled},
+            errorPolicy: 'all'
+        });
+
+        // A provider just created has no client ID yet.
+        setEnabled(true).its('errors.0.message').should('contain', 'client ID');
+
+        save(settings({enabled: false}));
+        setEnabled(true).its('data.setOidcProviderEnabled').should('deep.include', {enabled: true, label: 'API provider'});
+        setEnabled(false).its('data.setOidcProviderEnabled').should('deep.include', {enabled: false, label: 'API provider'});
     });
 
     it('Should delete a provider', () => {

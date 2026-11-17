@@ -4,7 +4,6 @@
     "description": "Les fournisseurs d'identité avec lesquels les visiteurs se connectent. La page de connexion est /sites/<site>.oidc-login.html.",
     "none": "Aucun fournisseur pour l'instant.",
     "enabled": "Activé",
-    "disabled": "Désactivé",
     "saved": "Enregistré.",
     "save": "Enregistrer",
     "mappers": "Mappers",

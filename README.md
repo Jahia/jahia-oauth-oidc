@@ -7,7 +7,7 @@ It relies on [jahia-authentication](https://github.com/Jahia/jahia-authenticatio
 Open **Administration > Sites > OpenID Connect** (`/jahia/administration/<siteKey>/jahia-oauth-oidc`). The page needs the permission `canSetupJahiaAuth` on the site.
 
 * **Add a provider** takes an id and a label. The id is 1 to 32 lowercase letters, digits or inner hyphens, and it names the provider in the login URL. The provider is created disabled.
-* The switch in front of the name of a provider turns it on or off at once. A provider whose settings are incomplete cannot be turned on.
+* The switch in front of the name of a provider turns it on or off at once, and leaves its other settings as they are. A provider whose settings are incomplete cannot be turned on.
 * A click on the name of a provider opens its settings, with its **Save**, **Mappers** and **Delete** buttons.
 * **Label**, **Logo URL** and **Order** set how the login page shows the provider. The logo URL is an absolute http(s) URL or a path that starts with `/`.
 
@@ -15,7 +15,7 @@ Open **Administration > Sites > OpenID Connect** (`/jahia/administration/<siteKe
 
 In **Administration > Sites > Jahia Authentication**, the **OpenID Connect** card lists the providers, opens the mappers of each one, and links to the page above.
 
-The settings of a provider are stored in `org.jahia.modules.auth-<siteKey>.cfg`, under the connector name `OidcConnector-<id>`. The GraphQL API `oidcProviders`, `createOidcProvider`, `saveOidcProvider` and `deleteOidcProvider` manages them as the page does.
+The settings of a provider are stored in `org.jahia.modules.auth-<siteKey>.cfg`, under the connector name `OidcConnector-<id>`. The GraphQL API `oidcProviders`, `createOidcProvider`, `saveOidcProvider`, `setOidcProviderEnabled` and `deleteOidcProvider` manages them as the page does.
 
 ### Settings of a provider
 * **Client ID** is mandatory.

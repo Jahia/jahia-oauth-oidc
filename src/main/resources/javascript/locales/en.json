@@ -4,7 +4,6 @@
     "description": "The identity providers visitors log in with. The login page is /sites/<site>.oidc-login.html.",
     "none": "No provider yet.",
     "enabled": "Enabled",
-    "disabled": "Disabled",
     "saved": "Saved.",
     "save": "Save",
     "mappers": "Mappers",

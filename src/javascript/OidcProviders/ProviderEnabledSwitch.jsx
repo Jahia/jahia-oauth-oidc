@@ -3,39 +3,32 @@ import PropTypes from 'prop-types';
 import {useMutation} from '@apollo/client';
 import {useTranslation} from 'react-i18next';
 import {Switch, Typography} from '@jahia/moonstone';
-import {SAVE_PROVIDER} from './OidcProviders.gql';
-import {toForm} from './ProviderForm';
+import {SET_PROVIDER_ENABLED} from './OidcProviders.gql';
 import styles from './OidcProviders.css';
 
 /**
- * Turns a provider on or off from its header, at once: the stored settings are saved back with the new state,
- * and an empty secret keeps the stored one. A provider whose settings are incomplete cannot be turned on.
+ * Turns a provider on or off from its header, at once, and leaves its other settings as they are. A provider whose
+ * settings are incomplete cannot be turned on.
  */
 export const ProviderEnabledSwitch = ({siteKey, provider, onChanged}) => {
     const {t} = useTranslation('jahia-oauth-oidc');
-    const [saveProvider, {loading, error}] = useMutation(SAVE_PROVIDER);
+    const [setEnabled, {loading, error}] = useMutation(SET_PROVIDER_ENABLED);
     const id = `oidc-${provider.id}-enabled`;
 
     const toggle = (e, value, checked) => {
-        const settings = toForm(provider);
-        saveProvider({
-            variables: {
-                siteKey,
-                providerId: provider.id,
-                settings: {...settings, enabled: checked, order: Number.parseInt(settings.order, 10) || 0}
-            }
-        }).then(onChanged).catch(() => {
-            // Shown below from the state of the mutation
+        setEnabled({variables: {siteKey, providerId: provider.id, enabled: checked}}).then(onChanged).catch(() => {
+            // Shown below the header from the state of the mutation
         });
     };
 
     return (
+        // The switch and its error are items of the header row: the error takes a line of its own
         <div className={styles.enabledSwitch}>
             <label className={styles.switch} htmlFor={id} data-test="oidc-provider-enabled">
                 <Switch id={id} checked={provider.enabled} isDisabled={loading} onChange={toggle}/>
-                <Typography>{t(provider.enabled ? 'label.enabled' : 'label.disabled')}</Typography>
+                <span className={styles.visuallyHidden}>{t('label.enabled')}</span>
             </label>
-            {error && <Typography className={styles.error} data-test="oidc-provider-enabled-error">{error.message}</Typography>}
+            {error && <Typography className={styles.headerError} data-test="oidc-provider-enabled-error">{error.message}</Typography>}
         </div>
     );
 };

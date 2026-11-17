@@ -156,6 +156,22 @@ final class OidcGraphQLSupport {
         run(() -> registry().saveProvider(siteKey, providerId, values, removed));
     }
 
+    /**
+     * Turns a provider on or off and leaves its other settings as they are. Turning it off always works; turning it
+     * on needs the settings a login cannot do without.
+     */
+    static void setEnabled(String siteKey, String providerId, boolean enabled) {
+        Map<String, String> stored = registry().getProviderSettings(siteKey, providerId)
+                .orElseThrow(() -> new BaseGqlClientException("The OIDC provider " + providerId + " does not exist", ErrorType.ValidationError));
+        if (enabled) {
+            required(stored.get(CLIENT_ID), "The client ID");
+            httpUrl(required(stored.get(ACCESS_TOKEN_ENDPOINT), "The access token endpoint URL"), "The access token endpoint URL");
+            httpUrl(required(stored.get(AUTHORIZATION_BASE_URL), "The authorization base URL"), "The authorization base URL");
+            httpUrl(required(stored.get(CALLBACK_URL), "The callback URL"), "The callback URL");
+        }
+        run(() -> registry().saveProvider(siteKey, providerId, Map.of(ENABLED, Boolean.toString(enabled)), Set.of()));
+    }
+
     private static void optional(Map<String, String> values, Set<String> removed, String name, String value) {
         if (value == null) {
             removed.add(name);

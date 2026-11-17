@@ -38,6 +38,20 @@ public final class OidcMutationExtensions {
 
     @GraphQLField
     @GraphQLNonNull
+    @GraphQLDescription("Turns an OIDC provider on or off, and keeps its other settings. Turning it on needs its client ID and endpoint URLs. Requires canSetupJahiaAuth on the site.")
+    // Without the name, graphql-java-annotations reads a set prefix as a setter and drops it.
+    @GraphQLName("setOidcProviderEnabled")
+    public static GqlOidcProvider setOidcProviderEnabled(@GraphQLName("siteKey") @GraphQLNonNull String siteKey,
+                                                         @GraphQLName("providerId") @GraphQLNonNull String providerId,
+                                                         @GraphQLName("enabled") @GraphQLNonNull Boolean enabled) {
+        OidcGraphQLSupport.checkCanSetup(siteKey);
+        OidcGraphQLSupport.requireValidProviderId(providerId);
+        OidcGraphQLSupport.setEnabled(siteKey, providerId, enabled);
+        return OidcGraphQLSupport.provider(siteKey, providerId);
+    }
+
+    @GraphQLField
+    @GraphQLNonNull
     @GraphQLDescription("Sends, or stops sending, a visitor who needs to log in on a live page or file of the site to its OIDC login page. Requires canSetupJahiaAuth on the site.")
     // Without the name, graphql-java-annotations reads a set prefix as a setter and drops it.
     @GraphQLName("setOidcLoginPageEnabled")

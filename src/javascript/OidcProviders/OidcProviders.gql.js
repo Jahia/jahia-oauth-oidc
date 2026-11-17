@@ -51,6 +51,15 @@ export const SAVE_PROVIDER = gql`
     ${PROVIDER_FIELDS}
 `;
 
+export const SET_PROVIDER_ENABLED = gql`
+    mutation setOidcProviderEnabled($siteKey: String!, $providerId: String!, $enabled: Boolean!) {
+        setOidcProviderEnabled(siteKey: $siteKey, providerId: $providerId, enabled: $enabled) {
+            ...OidcProviderFields
+        }
+    }
+    ${PROVIDER_FIELDS}
+`;
+
 export const DELETE_PROVIDER = gql`
     mutation deleteOidcProvider($siteKey: String!, $providerId: String!) {
         deleteOidcProvider(siteKey: $siteKey, providerId: $providerId)

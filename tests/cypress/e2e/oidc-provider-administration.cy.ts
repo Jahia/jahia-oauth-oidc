@@ -66,15 +66,15 @@ describe('OIDC provider administration', () => {
 
         // A configured provider is turned on from its header; an incomplete one cannot be.
         cy.get(card('first')).find('[data-test="oidc-provider-enabled"]').click();
-        cy.get(card('first')).find('[data-test="oidc-provider-enabled"]').should('contain', 'Enabled');
+        cy.get(card('first')).find('[data-test="oidc-provider-enabled"] input').should('be.checked');
         cy.get(card('second')).find('[data-test="oidc-provider-enabled"]').click();
         cy.get(card('second')).find('[data-test="oidc-provider-enabled-error"]').should('contain', 'client ID');
 
         // The settings survive a reload, and the stored secret is never sent back.
         cy.reload();
         cy.get('[data-test="oidc-provider-card"]').should('have.length', 2);
-        cy.get(card('first')).find('[data-test="oidc-provider-enabled"]').should('contain', 'Enabled');
-        cy.get(card('second')).find('[data-test="oidc-provider-enabled"]').should('contain', 'Disabled');
+        cy.get(card('first')).find('[data-test="oidc-provider-enabled"] input').should('be.checked');
+        cy.get(card('second')).find('[data-test="oidc-provider-enabled"] input').should('not.be.checked');
         cy.get(card('first')).find('button').first().click();
         cy.get(field('first', 'clientId')).should('have.value', 'client');
         cy.get(field('first', 'clientSecret')).should('have.value', '');

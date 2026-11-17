@@ -57,22 +57,37 @@
 
 .providerHeaderRow {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-medium, 16px);
+    column-gap: var(--spacing-medium, 16px);
 }
 
+/* Lets the switch and its error be items of the header row */
 .enabledSwitch {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
+    display: contents;
+}
+
+.headerError {
+    flex: 0 0 100%;
+    order: 1;
+    color: var(--color-danger, #d0021b);
+}
+
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }
 
 .providerHeader {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: var(--spacing-small, 8px);
-    width: 100%;
     padding: var(--spacing-small, 8px) 0;
     border: 0;
     background: none;
