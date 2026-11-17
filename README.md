@@ -7,8 +7,8 @@ It relies on [jahia-authentication](https://github.com/Jahia/jahia-authenticatio
 Open **Administration > Sites > OpenID Connect** (`/jahia/administration/<siteKey>/jahia-oauth-oidc`). The page needs the permission `canSetupJahiaAuth` on the site.
 
 * **Add a provider** takes an id and a label. The id is 1 to 32 lowercase letters, digits or inner hyphens, and it names the provider in the login URL. The provider is created disabled.
-* The switch in the header of a provider turns it on or off at once. A provider whose settings are incomplete cannot be turned on.
-* Each provider opens on its settings, with its **Save**, **Mappers** and **Delete** buttons.
+* The switch in front of the name of a provider turns it on or off at once. A provider whose settings are incomplete cannot be turned on.
+* A click on the name of a provider opens its settings, with its **Save**, **Mappers** and **Delete** buttons.
 * **Label**, **Logo URL** and **Order** set how the login page shows the provider. The logo URL is an absolute http(s) URL or a path that starts with `/`.
 
 ![OpenID Connect administration](/docs/oidc-providers-admin.png "OpenID Connect administration")

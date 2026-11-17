@@ -139,8 +139,10 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
                                   data={authentications}
                                   onChange={(e, item) => change('authentication', item.value)}/>
                     </Field>
+                    <div className={styles.checkboxCell}>
+                        <CheckboxField providerId={providerId} name="withPKCE" label={t('label.field.withPKCE')} isChecked={form.withPKCE} onChange={change}/>
+                    </div>
                 </div>
-                <CheckboxField providerId={providerId} name="withPKCE" label={t('label.field.withPKCE')} isChecked={form.withPKCE} onChange={change}/>
 
                 {field('authorizationBaseUrl', t('label.field.authorizationBaseUrl'), {isRequired: true, helper: t('label.field.authorizationBaseUrlHelper')})}
                 {field('accessTokenEndpoint', t('label.field.accessTokenEndpoint'), {isRequired: true, helper: t('label.field.accessTokenEndpointHelper')})}
