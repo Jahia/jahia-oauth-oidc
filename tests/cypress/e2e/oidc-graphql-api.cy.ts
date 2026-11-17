@@ -51,7 +51,12 @@ describe('OIDC providers GraphQL API', () => {
             headers: {'Content-Type': 'application/json', Origin: Cypress.config('baseUrl')},
             body: {query: `{ oidcProviders(siteKey: "${siteKey}") { id } }`},
             failOnStatusCode: false
-        }).its('body.errors.0.message').should('contain', 'canSetupJahiaAuth');
+        }).its('body').should(body => {
+            // Depending on the Jahia version, the API security filter refuses the guest before the module does:
+            // both answers start with "Permission denied".
+            expect(body.data).to.equal(null);
+            expect(body.errors[0].message).to.match(/^Permission denied/);
+        });
     });
 
     it('Should refuse invalid settings', () => {
