@@ -44,7 +44,7 @@ Version 3.0 breaks the following:
 * With several enabled providers and no `default` one, `.oidc-connect.do` without `provider` is refused with a 400.
 
 ## Login page
-* `/sites/<siteKey>.oidc-login.html` is a ready-made login page, whatever the template set of the site. It lists the enabled providers by order, then by label.
+* `/sites/<siteKey>.oidc-login.html` is a ready-made login page in the look of the Jahia login page, whatever the template set of the site. It lists the enabled providers by order, then by label, and links to the Jahia login for an account of the site.
 * The **OIDC login providers** component (`jcauthnt:oidcLoginProviders`) shows the same list in any page. With **autoRedirect**, it opens the provider at once when a single one is enabled, once per browser tab.
 
 ![OIDC login page](/docs/oidc-login.png "OIDC login page")

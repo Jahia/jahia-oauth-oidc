@@ -22,11 +22,7 @@
                     <oidc-login j:applyOn="jnt:virtualsite"
                                 j:defaultTemplate="false"
                                 j:hiddenTemplate="false"
-                                jcr:primaryType="jnt:contentTemplate">
-                        <pagecontent jcr:primaryType="jnt:contentList">
-                            <oidc-login-providers autoRedirect="false" jcr:primaryType="jcauthnt:oidcLoginProviders"/>
-                        </pagecontent>
-                    </oidc-login>
+                                jcr:primaryType="jnt:contentTemplate"/>
                 </oidc-login-base>
             </templates>
         </jahia-oauth-oidc>

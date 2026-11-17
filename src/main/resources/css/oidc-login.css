@@ -24,9 +24,41 @@
     border-color: currentColor;
 }
 
-.oidc-login-page main {
-    max-width: 22rem;
-    margin: 10vh auto;
-    padding: 0 1rem;
-    font-family: system-ui, sans-serif;
+
+/* The login page of a site, on top of the styles of the Jahia login page */
+.oidc-login-page {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 280px;
+    font-family: 'Nunito Sans', sans-serif;
+    color: #fff;
+}
+
+.oidc-login-page__title {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.oidc-login-page form button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 0;
+}
+
+.oidc-login-page__empty {
+    text-align: center;
+}
+
+.oidc-login-page__jahia {
+    margin-top: 16px;
+    font-size: 12px;
+    text-align: center;
+    color: rgba(253, 253, 253, 0.6);
 }
