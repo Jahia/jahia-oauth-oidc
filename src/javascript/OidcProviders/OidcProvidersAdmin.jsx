@@ -2,10 +2,11 @@ import React, {useState} from 'react';
 import {useQuery} from '@apollo/client';
 import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import {ChevronDown, ChevronRight, Chip, Header, LayoutContent, Typography} from '@jahia/moonstone';
+import {ChevronDown, ChevronRight, Header, LayoutContent, Typography} from '@jahia/moonstone';
 import {GET_PROVIDERS} from './OidcProviders.gql';
 import {LoginPageSettings} from './LoginPageSettings';
 import {NewProviderForm} from './NewProviderForm';
+import {ProviderEnabledSwitch} from './ProviderEnabledSwitch';
 import {ProviderForm} from './ProviderForm';
 import styles from './OidcProviders.css';
 
@@ -46,19 +47,20 @@ export const OidcProvidersAdmin = () => {
                         const isExpanded = expandedId === provider.id;
                         return (
                             <div key={provider.id} data-test="oidc-provider-card" data-provider={provider.id}>
-                                {/* Moonstone's Collapsible takes a text label only: the status needs its own header */}
-                                <button type="button"
-                                        className={styles.providerHeader}
-                                        aria-expanded={isExpanded}
-                                        aria-controls={`oidc-provider-${provider.id}`}
-                                        onClick={() => setExpandedId(isExpanded ? null : provider.id)}
-                                >
-                                    {isExpanded ? <ChevronDown/> : <ChevronRight/>}
-                                    <Typography variant="heading" weight="bold">{provider.label}</Typography>
-                                    <Typography variant="caption">{provider.id}</Typography>
-                                    <Chip label={t(provider.enabled ? 'label.enabled' : 'label.disabled')}
-                                          color={provider.enabled ? 'success' : 'default'}/>
-                                </button>
+                                {/* Moonstone's Collapsible takes a text label only: the header holds the switch too */}
+                                <div className={styles.providerHeaderRow}>
+                                    <button type="button"
+                                            className={styles.providerHeader}
+                                            aria-expanded={isExpanded}
+                                            aria-controls={`oidc-provider-${provider.id}`}
+                                            onClick={() => setExpandedId(isExpanded ? null : provider.id)}
+                                    >
+                                        {isExpanded ? <ChevronDown/> : <ChevronRight/>}
+                                        <Typography variant="heading" weight="bold">{provider.label}</Typography>
+                                        <Typography variant="caption">{provider.id}</Typography>
+                                    </button>
+                                    <ProviderEnabledSwitch siteKey={siteKey} provider={provider} onChanged={refetch}/>
+                                </div>
                                 {/* Kept mounted while collapsed, so that unsaved changes survive */}
                                 <div id={`oidc-provider-${provider.id}`} hidden={!isExpanded}>
                                     <ProviderForm siteKey={siteKey}

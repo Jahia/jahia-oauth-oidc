@@ -20,7 +20,6 @@
       "confirm": "Supprimer le fournisseur {{- label}} et ses mappers ?"
     },
     "field": {
-      "enabled": "Les visiteurs peuvent se connecter avec ce fournisseur",
       "label": "Libellé",
       "labelHelper": "Affiché sur la page de connexion",
       "logoUrl": "URL du logo",

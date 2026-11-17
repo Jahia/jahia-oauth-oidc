@@ -47,7 +47,20 @@
     cursor: pointer;
 }
 
+.providerHeaderRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-medium, 16px);
+}
+
+.enabledSwitch {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+}
+
 .providerHeader {
+    flex: 1 1 auto;
     display: flex;
     align-items: center;
     gap: var(--spacing-small, 8px);

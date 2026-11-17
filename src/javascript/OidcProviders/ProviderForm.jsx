@@ -2,13 +2,13 @@ import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import {useMutation} from '@apollo/client';
 import {useTranslation} from 'react-i18next';
-import {Button, Delete, Dropdown, Field, Input, OpenInNew, Paper, Save, Switch, Typography} from '@jahia/moonstone';
+import {Button, Checkbox, Delete, Dropdown, Field, Input, OpenInNew, Paper, Save, Typography} from '@jahia/moonstone';
 import {DELETE_PROVIDER, SAVE_PROVIDER} from './OidcProviders.gql';
 import styles from './OidcProviders.css';
 
 const contextPath = globalThis.contextJsParameters?.contextPath || '';
 
-const toForm = provider => ({
+export const toForm = provider => ({
     enabled: provider.enabled,
     label: provider.label || '',
     logoUrl: provider.logoUrl || '',
@@ -47,14 +47,14 @@ TextField.propTypes = {
     type: PropTypes.string
 };
 
-const SwitchField = ({providerId, name, label, isChecked, onChange}) => (
+const CheckboxField = ({providerId, name, label, isChecked, onChange}) => (
     <label className={styles.switch} htmlFor={`oidc-${providerId}-${name}`} data-test={`oidc-${providerId}-${name}`}>
-        <Switch id={`oidc-${providerId}-${name}`} checked={isChecked} onChange={(e, value, checked) => onChange(name, checked)}/>
+        <Checkbox id={`oidc-${providerId}-${name}`} checked={isChecked} onChange={(e, value, checked) => onChange(name, checked)}/>
         <Typography>{label}</Typography>
     </label>
 );
 
-SwitchField.propTypes = {
+CheckboxField.propTypes = {
     providerId: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
@@ -73,7 +73,10 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
     const [deleteProvider, deleteState] = useMutation(DELETE_PROVIDER);
     const providerId = provider.id;
 
-    useEffect(() => setForm(toForm(provider)), [provider]);
+    // The header switches a provider on and off: that alone must not drop the changes not saved yet.
+    const providerKey = JSON.stringify({...provider, enabled: null});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => setForm(toForm(provider)), [providerKey]);
 
     const change = (name, value) => {
         setSaved(false);
@@ -84,7 +87,7 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
         variables: {
             siteKey,
             providerId,
-            settings: {...form, order: Number.parseInt(form.order, 10) || 0}
+            settings: {...form, enabled: provider.enabled, order: Number.parseInt(form.order, 10) || 0}
         }
     }).then(() => {
         setSaved(true);
@@ -114,8 +117,6 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
     return (
         <Paper hasPadding>
             <div className={styles.form} data-test="oidc-provider-form">
-                <SwitchField providerId={providerId} name="enabled" label={t('label.field.enabled')} isChecked={form.enabled} onChange={change}/>
-
                 <div className={styles.row}>
                     {field('label', t('label.field.label'), {helper: t('label.field.labelHelper')})}
                     {field('logoUrl', t('label.field.logoUrl'), {helper: t('label.field.logoUrlHelper')})}
@@ -139,7 +140,7 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
                                   onChange={(e, item) => change('authentication', item.value)}/>
                     </Field>
                 </div>
-                <SwitchField providerId={providerId} name="withPKCE" label={t('label.field.withPKCE')} isChecked={form.withPKCE} onChange={change}/>
+                <CheckboxField providerId={providerId} name="withPKCE" label={t('label.field.withPKCE')} isChecked={form.withPKCE} onChange={change}/>
 
                 {field('authorizationBaseUrl', t('label.field.authorizationBaseUrl'), {isRequired: true, helper: t('label.field.authorizationBaseUrlHelper')})}
                 {field('accessTokenEndpoint', t('label.field.accessTokenEndpoint'), {isRequired: true, helper: t('label.field.accessTokenEndpointHelper')})}

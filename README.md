@@ -7,6 +7,7 @@ It relies on [jahia-authentication](https://github.com/Jahia/jahia-authenticatio
 Open **Administration > Sites > OpenID Connect** (`/jahia/administration/<siteKey>/jahia-oauth-oidc`). The page needs the permission `canSetupJahiaAuth` on the site.
 
 * **Add a provider** takes an id and a label. The id is 1 to 32 lowercase letters, digits or inner hyphens, and it names the provider in the login URL. The provider is created disabled.
+* The switch in the header of a provider turns it on or off at once. A provider whose settings are incomplete cannot be turned on.
 * Each provider opens on its settings, with its **Save**, **Mappers** and **Delete** buttons.
 * **Label**, **Logo URL** and **Order** set how the login page shows the provider. The logo URL is an absolute http(s) URL or a path that starts with `/`.
 
@@ -17,7 +18,6 @@ In **Administration > Sites > Jahia Authentication**, the **OpenID Connect** car
 The settings of a provider are stored in `org.jahia.modules.auth-<siteKey>.cfg`, under the connector name `OidcConnector-<id>`. The GraphQL API `oidcProviders`, `createOidcProvider`, `saveOidcProvider` and `deleteOidcProvider` manages them as the page does.
 
 ### Settings of a provider
-* **Activate**: only an enabled provider can start a login.
 * **Client ID** is mandatory.
 * **Client secret**: it is never shown again once saved. Leave the field empty to keep the stored secret.
 * **PKCE** security, disabled by default ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)).

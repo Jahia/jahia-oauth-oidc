@@ -20,7 +20,6 @@
       "confirm": "Delete the provider {{- label}} and its mappers?"
     },
     "field": {
-      "enabled": "Visitors can log in with this provider",
       "label": "Label",
       "labelHelper": "Shown on the login page",
       "logoUrl": "Logo URL",
