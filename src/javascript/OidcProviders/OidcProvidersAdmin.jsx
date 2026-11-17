@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {useQuery} from '@apollo/client';
 import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import {Chip, Collapsible, Header, LayoutContent, Typography} from '@jahia/moonstone';
+import {ChevronDown, ChevronRight, Chip, Header, LayoutContent, Typography} from '@jahia/moonstone';
 import {GET_PROVIDERS} from './OidcProviders.gql';
 import {NewProviderForm} from './NewProviderForm';
 import {ProviderForm} from './ProviderForm';
@@ -34,23 +34,34 @@ export const OidcProvidersAdmin = () => {
                                      onCreated={onCreated}/>
                     {error && <Typography className={styles.error}>{error.message}</Typography>}
                     {data && providers.length === 0 && <Typography>{t('label.none')}</Typography>}
-                    {providers.map(provider => (
-                        <div key={provider.id} data-test="oidc-provider-card" data-provider={provider.id}>
-                            <Collapsible id={`oidc-provider-${provider.id}`}
-                                         label={`${provider.label} (${provider.id})`}
-                                         isExpanded={expandedId === provider.id}
-                                         onClick={() => setExpandedId(expandedId === provider.id ? null : provider.id)}
-                            >
-                                <Chip label={t(provider.enabled ? 'label.enabled' : 'label.disabled')}
-                                      color={provider.enabled ? 'success' : 'default'}/>
-                                <ProviderForm siteKey={siteKey}
-                                              language={language}
-                                              provider={provider}
-                                              onSaved={refetch}
-                                              onDeleted={onDeleted}/>
-                            </Collapsible>
-                        </div>
-                    ))}
+                    {providers.map(provider => {
+                        const isExpanded = expandedId === provider.id;
+                        return (
+                            <div key={provider.id} data-test="oidc-provider-card" data-provider={provider.id}>
+                                {/* Moonstone's Collapsible takes a text label only: the status needs its own header */}
+                                <button type="button"
+                                        className={styles.providerHeader}
+                                        aria-expanded={isExpanded}
+                                        aria-controls={`oidc-provider-${provider.id}`}
+                                        onClick={() => setExpandedId(isExpanded ? null : provider.id)}
+                                >
+                                    {isExpanded ? <ChevronDown/> : <ChevronRight/>}
+                                    <Typography variant="heading" weight="bold">{provider.label}</Typography>
+                                    <Typography variant="caption">{provider.id}</Typography>
+                                    <Chip label={t(provider.enabled ? 'label.enabled' : 'label.disabled')}
+                                          color={provider.enabled ? 'success' : 'default'}/>
+                                </button>
+                                {/* Kept mounted while collapsed, so that unsaved changes survive */}
+                                <div id={`oidc-provider-${provider.id}`} hidden={!isExpanded}>
+                                    <ProviderForm siteKey={siteKey}
+                                                  language={language}
+                                                  provider={provider}
+                                                  onSaved={refetch}
+                                                  onDeleted={onDeleted}/>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         />

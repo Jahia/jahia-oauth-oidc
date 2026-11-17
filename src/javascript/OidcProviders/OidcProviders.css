@@ -46,3 +46,16 @@
     gap: var(--spacing-small, 8px);
     cursor: pointer;
 }
+
+.providerHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small, 8px);
+    width: 100%;
+    padding: var(--spacing-small, 8px) 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
