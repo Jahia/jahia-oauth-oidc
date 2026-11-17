@@ -51,6 +51,9 @@ final class OidcGraphQLSupport {
     private static final Pattern SITE_KEY = Pattern.compile("[\\w-]+");
     private static final Set<String> AUTHENTICATIONS = Set.of("basic", "body");
     private static final Set<String> RETURN_MODES = Set.of("homepage", "url", "cookie");
+    private static final String ACCESS_TOKEN_ENDPOINT_NAME = "The access token endpoint URL";
+    private static final String AUTHORIZATION_BASE_URL_NAME = "The authorization base URL";
+    private static final String CALLBACK_URL_NAME = "The callback URL";
 
     private OidcGraphQLSupport() {
     }
@@ -135,9 +138,9 @@ final class OidcGraphQLSupport {
         optional(values, removed, SCOPE, StringUtils.trimToNull(input.getScope()));
         values.put(AUTHENTICATION, oneOf(StringUtils.defaultIfBlank(input.getAuthentication(), "basic"), AUTHENTICATIONS, "The authentication"));
         values.put(WITH_PKCE, Boolean.toString(Boolean.TRUE.equals(input.getWithPKCE())));
-        values.put(ACCESS_TOKEN_ENDPOINT, httpUrl(required(input.getAccessTokenEndpoint(), "The access token endpoint URL"), "The access token endpoint URL"));
-        values.put(AUTHORIZATION_BASE_URL, httpUrl(required(input.getAuthorizationBaseUrl(), "The authorization base URL"), "The authorization base URL"));
-        String callbackUrl = httpUrl(required(input.getCallbackUrl(), "The callback URL"), "The callback URL");
+        values.put(ACCESS_TOKEN_ENDPOINT, requiredHttpUrl(input.getAccessTokenEndpoint(), ACCESS_TOKEN_ENDPOINT_NAME));
+        values.put(AUTHORIZATION_BASE_URL, requiredHttpUrl(input.getAuthorizationBaseUrl(), AUTHORIZATION_BASE_URL_NAME));
+        String callbackUrl = requiredHttpUrl(input.getCallbackUrl(), CALLBACK_URL_NAME);
         if (!callbackUrl.endsWith(".oidc-callback.do")) {
             throw invalid("The callback URL must end with .oidc-callback.do");
         }
@@ -165,9 +168,9 @@ final class OidcGraphQLSupport {
                 .orElseThrow(() -> new BaseGqlClientException("The OIDC provider " + providerId + " does not exist", ErrorType.ValidationError));
         if (enabled) {
             required(stored.get(CLIENT_ID), "The client ID");
-            httpUrl(required(stored.get(ACCESS_TOKEN_ENDPOINT), "The access token endpoint URL"), "The access token endpoint URL");
-            httpUrl(required(stored.get(AUTHORIZATION_BASE_URL), "The authorization base URL"), "The authorization base URL");
-            httpUrl(required(stored.get(CALLBACK_URL), "The callback URL"), "The callback URL");
+            requiredHttpUrl(stored.get(ACCESS_TOKEN_ENDPOINT), ACCESS_TOKEN_ENDPOINT_NAME);
+            requiredHttpUrl(stored.get(AUTHORIZATION_BASE_URL), AUTHORIZATION_BASE_URL_NAME);
+            requiredHttpUrl(stored.get(CALLBACK_URL), CALLBACK_URL_NAME);
         }
         run(() -> registry().saveProvider(siteKey, providerId, Map.of(ENABLED, Boolean.toString(enabled)), Set.of()));
     }
@@ -186,6 +189,10 @@ final class OidcGraphQLSupport {
             throw invalid(what + " is mandatory");
         }
         return trimmed;
+    }
+
+    private static String requiredHttpUrl(String value, String what) {
+        return httpUrl(required(value, what), what);
     }
 
     private static String httpUrl(String value, String what) {

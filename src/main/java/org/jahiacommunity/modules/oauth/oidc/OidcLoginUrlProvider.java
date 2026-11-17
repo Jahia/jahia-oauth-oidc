@@ -48,42 +48,58 @@ public class OidcLoginUrlProvider implements LoginUrlProvider {
     @Override
     public String getLoginUrl(HttpServletRequest request) {
         String contextPath = StringUtils.defaultString(request.getContextPath());
-        String siteKey;
-        String language;
-        String redirect = null;
-
         URLResolver urlResolver = (URLResolver) request.getAttribute("urlResolver");
-        if (urlResolver != null) {
-            if (!"render".equals(urlResolver.getServletPart()) || !Constants.LIVE_WORKSPACE.equals(urlResolver.getWorkspace())) {
-                return null;
-            }
-            siteKey = urlResolver.getSiteKey();
-            language = urlResolver.getLocale() == null ? null : urlResolver.getLocale().toString();
-        } else {
-            String uri = (String) request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);
-            String path = Strings.CS.removeStart(uri, contextPath);
-            Matcher matcher = path == null ? null : LIVE_FILE.matcher(path);
-            if (matcher == null || !matcher.matches()) {
-                return null;
-            }
-            siteKey = matcher.group(1);
-            language = null;
-            String query = (String) request.getAttribute(ERROR_QUERY_STRING);
-            redirect = uri + (StringUtils.isEmpty(query) ? "" : "?" + query);
-        }
-
-        if (StringUtils.isBlank(siteKey) || !oidcProviderRegistry.isLoginPageEnabled(siteKey)
-                || oidcProviderRegistry.getProviders(siteKey, true).isEmpty()) {
+        Target target = urlResolver != null ? livePage(urlResolver) : liveFile(request, contextPath);
+        if (target == null || StringUtils.isBlank(target.siteKey) || !oidcProviderRegistry.isLoginPageEnabled(target.siteKey)
+                || oidcProviderRegistry.getProviders(target.siteKey, true).isEmpty()) {
             return null;
         }
+        String language = target.language != null ? target.language : defaultLanguage(target.siteKey);
         if (language == null) {
-            language = defaultLanguage(siteKey);
-            if (language == null) {
-                return null;
-            }
+            return null;
         }
-        String loginUrl = contextPath + "/cms/render/live/" + language + "/sites/" + siteKey + ".oidc-login.html";
-        return redirect == null ? loginUrl : loginUrl + "?" + OidcRedirects.PARAMETER + "=" + URLEncoder.encode(redirect, StandardCharsets.UTF_8);
+        String loginUrl = contextPath + "/cms/render/live/" + language + "/sites/" + target.siteKey + ".oidc-login.html";
+        return target.redirect == null ? loginUrl
+                : loginUrl + "?" + OidcRedirects.PARAMETER + "=" + URLEncoder.encode(target.redirect, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * @return the site and language of a page rendered from LIVE; the page itself is where the login returns by default
+     */
+    private static Target livePage(URLResolver urlResolver) {
+        if (!"render".equals(urlResolver.getServletPart()) || !Constants.LIVE_WORKSPACE.equals(urlResolver.getWorkspace())) {
+            return null;
+        }
+        return new Target(urlResolver.getSiteKey(), urlResolver.getLocale() == null ? null : urlResolver.getLocale().toString(), null);
+    }
+
+    /**
+     * @return the site of a LIVE file, which has no language, and the file to return to once logged in
+     */
+    private static Target liveFile(HttpServletRequest request, String contextPath) {
+        String uri = (String) request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);
+        String path = Strings.CS.removeStart(uri, contextPath);
+        Matcher matcher = path == null ? null : LIVE_FILE.matcher(path);
+        if (matcher == null || !matcher.matches()) {
+            return null;
+        }
+        String query = (String) request.getAttribute(ERROR_QUERY_STRING);
+        return new Target(matcher.group(1), null, uri + (StringUtils.isEmpty(query) ? "" : "?" + query));
+    }
+
+    /**
+     * The site of the resource a guest asked for, its language when the URL carries one, and where to return.
+     */
+    private static final class Target {
+        private final String siteKey;
+        private final String language;
+        private final String redirect;
+
+        private Target(String siteKey, String language, String redirect) {
+            this.siteKey = siteKey;
+            this.language = language;
+            this.redirect = redirect;
+        }
     }
 
     private String defaultLanguage(String siteKey) {
