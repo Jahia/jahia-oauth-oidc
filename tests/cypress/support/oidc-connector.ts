@@ -2,7 +2,7 @@ import {callbackUrl} from './urls';
 import {accessTokenEndpoint, authorizationBaseUrl, profileUrl} from './keycloak';
 
 /**
- * Configures the OIDC connector for a site.
+ * Configures the OIDC connectors of a site.
  *
  * The connector is stored by jahia-authentication as an OSGi factory configuration
  * (`org.jahia.modules.auth-<siteKey>.cfg`, factory pid `org.jahia.modules.auth`), keyed
@@ -10,7 +10,8 @@ import {accessTokenEndpoint, authorizationBaseUrl, profileUrl} from './keycloak'
  * call back into OidcConnector.validateSettings(), which is what registers the
  * `OidcConnector-<siteKey>` OAuth API — without it the flow cannot start.
  *
- * Every property below is prefixed with the connector service name (OidcConnector.KEY).
+ * Every property below is prefixed with the connector service name: OidcConnector.KEY for the
+ * original single provider, `OidcConnector-<providerId>` for a named provider.
  */
 
 const CONNECTOR = 'OidcConnector';
@@ -23,6 +24,13 @@ export type ReturnMode = 'homepage' | 'url' | 'cookie';
 
 export interface OidcConnectorOptions {
     siteKey: string;
+    /** A named provider (`OidcConnector-<providerId>`); omitted, the original single-provider connector. */
+    providerId?: string;
+    /** Shown on the login page. */
+    label?: string;
+    /** Position on the login page. */
+    order?: number;
+    enabled?: boolean;
     clientId: string;
     clientSecret: string;
     /** Drives OidcApi -> OidcService, which calls initPKCE() and adds code_challenge. */
@@ -75,8 +83,16 @@ const MAPPING = [
 ];
 
 export function configureOidcConnector(options: OidcConnectorOptions): void {
+    configureOidcConnectors(options.siteKey, [options]);
+}
+
+function connectorLines(options: OidcConnectorOptions): string[] {
     const {
         siteKey,
+        providerId,
+        label,
+        order,
+        enabled = true,
         clientId,
         clientSecret,
         withPKCE,
@@ -87,38 +103,56 @@ export function configureOidcConnector(options: OidcConnectorOptions): void {
         returnCookie,
         scope = 'openid profile email'
     } = options;
+    const connector = providerId ? `${CONNECTOR}-${providerId}` : CONNECTOR;
 
     const lines = [
-        `# OIDC connector configuration for site ${siteKey}`,
-        `siteKey = ${siteKey}`,
-        `${CONNECTOR}.enabled = true`,
-        // Must match the api registered by OidcConnector.validateSettings(): KEY + "-" + siteKey
-        `${CONNECTOR}.oauthApiName = ${CONNECTOR}-${siteKey}`,
-        `${CONNECTOR}.apiKey = ${clientId}`,
-        `${CONNECTOR}.apiSecret = ${clientSecret}`,
-        `${CONNECTOR}.scope = ${scope}`,
-        `${CONNECTOR}.authentication = ${authentication}`,
-        `${CONNECTOR}.withPKCE = ${withPKCE}`,
-        `${CONNECTOR}.authorizationBaseUrl = ${authorizationBaseUrl()}`,
-        `${CONNECTOR}.accessTokenEndpoint = ${accessTokenEndpoint()}`,
-        `${CONNECTOR}.profileUrl = ${profileUrl()}`,
-        `${CONNECTOR}.callbackUrl = ${callbackUrl(siteKey, page)}`,
-        `${CONNECTOR}.returnMode = ${returnMode}`
+        `${connector}.enabled = ${enabled}`,
+        // A named provider uses the shared OidcApi. The original connector keeps the API name the
+        // 2.0.x UI saved, registered by OidcConnector.validateSettings(): KEY + "-" + siteKey.
+        `${connector}.oauthApiName = ${providerId ? 'OidcApi' : `${CONNECTOR}-${siteKey}`}`,
+        `${connector}.apiKey = ${clientId}`,
+        `${connector}.apiSecret = ${clientSecret}`,
+        `${connector}.scope = ${scope}`,
+        `${connector}.authentication = ${authentication}`,
+        `${connector}.withPKCE = ${withPKCE}`,
+        `${connector}.authorizationBaseUrl = ${authorizationBaseUrl()}`,
+        `${connector}.accessTokenEndpoint = ${accessTokenEndpoint()}`,
+        `${connector}.profileUrl = ${profileUrl()}`,
+        `${connector}.callbackUrl = ${callbackUrl(siteKey, page)}`,
+        `${connector}.returnMode = ${returnMode}`
     ];
 
+    if (label) {
+        lines.push(`${connector}.label = ${label}`);
+    }
+
+    if (order !== undefined) {
+        lines.push(`${connector}.order = ${order}`);
+    }
+
     if (returnMode === 'url') {
-        lines.push(`${CONNECTOR}.returnUrl = ${returnUrl}`);
+        lines.push(`${connector}.returnUrl = ${returnUrl}`);
     }
 
     if (returnMode === 'cookie') {
-        lines.push(`${CONNECTOR}.returnCookie = ${returnCookie}`);
+        lines.push(`${connector}.returnCookie = ${returnCookie}`);
     }
 
     lines.push(
-        `${CONNECTOR}.mappers.${MAPPER}.enabled = true`,
-        `${CONNECTOR}.mappers.${MAPPER}.createUserAtSiteLevel = false`,
-        `${CONNECTOR}.mappers.${MAPPER}.mapping = ${JSON.stringify(MAPPING)}`
+        `${connector}.mappers.${MAPPER}.enabled = true`,
+        `${connector}.mappers.${MAPPER}.createUserAtSiteLevel = false`,
+        `${connector}.mappers.${MAPPER}.mapping = ${JSON.stringify(MAPPING)}`
     );
+    return lines;
+}
+
+/** Writes every connector of the site in its one configuration file. */
+export function configureOidcConnectors(siteKey: string, connectors: OidcConnectorOptions[]): void {
+    const lines = [
+        `# OIDC connector configuration for site ${siteKey}`,
+        `siteKey = ${siteKey}`,
+        ...connectors.flatMap(connectorLines)
+    ];
 
     const configFileName = `org.jahia.modules.auth-${siteKey}.cfg`;
     const baseContent = lines.join('\n') + '\n';
@@ -132,8 +166,9 @@ export function configureOidcConnector(options: OidcConnectorOptions): void {
     // ConnectorService.validateSettings() in its else-branch only, and the first callback
     // for a brand-new pid takes the other branch. For most jahia-oauth connectors that is
     // invisible, because their APIs are registered statically at service activation — but
-    // this connector registers `OidcConnector-<siteKey>` from validateSettings(), so on a
-    // first-ever install it is never registered and .oidc-connect.do fails with a 500.
+    // this connector registers the legacy `OidcConnector-<siteKey>` from validateSettings(), so
+    // on a first-ever install it is never registered and .oidc-connect.do fails with a 500.
+    // A named provider uses the OidcApi registered at activation and needs no second install.
     //
     // The second install carries a nonce so the properties genuinely differ; Config Admin
     // skips a no-op update, and an identical file would not fire the callback again.
@@ -141,7 +176,7 @@ export function configureOidcConnector(options: OidcConnectorOptions): void {
     installConfiguration(
         configFileName,
         siteKey,
-        `${baseContent}${CONNECTOR}.configNonce = ${Date.now()}\n`
+        `${baseContent}configNonce = ${Date.now()}\n`
     );
 }
 

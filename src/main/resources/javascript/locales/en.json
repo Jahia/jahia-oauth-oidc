@@ -1,0 +1,61 @@
+{
+  "label": {
+    "title": "OpenID Connect",
+    "description": "The identity providers visitors log in with. The login page is /sites/<site>.oidc-login.html.",
+    "none": "No provider yet.",
+    "enabled": "Enabled",
+    "saved": "Saved.",
+    "save": "Save",
+    "mappers": "Mappers",
+    "add": {
+      "title": "Add a provider",
+      "id": "Provider id",
+      "idHelper": "1 to 32 lowercase letters, digits or hyphens. It names the provider in the login URL: ?provider=<id>",
+      "label": "Label",
+      "button": "Add"
+    },
+    "delete": {
+      "button": "Delete",
+      "confirm": "Delete the provider {{- label}} and its mappers?"
+    },
+    "field": {
+      "label": "Label",
+      "labelHelper": "Shown on the login page",
+      "logoUrl": "Logo URL",
+      "logoUrlHelper": "Absolute http(s) URL or path starting with /",
+      "order": "Order",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "clientSecretStored": "A secret is stored. Leave empty to keep it.",
+      "clientSecretNone": "No secret is stored.",
+      "scope": "Scope",
+      "scopeHelper": "Separated by spaces: openid profile email",
+      "authentication": "Client authentication",
+      "withPKCE": "PKCE (RFC 7636)",
+      "authorizationBaseUrl": "Authorization base URL",
+      "authorizationBaseUrlHelper": "Ends with /auth or /authorize, for instance <server>/realms/<realm>/protocol/openid-connect/auth",
+      "accessTokenEndpoint": "Access token endpoint URL",
+      "accessTokenEndpointHelper": "Ends with /token, for instance <server>/realms/<realm>/protocol/openid-connect/token",
+      "profileUrl": "Profile URL",
+      "profileUrlHelper": "The userinfo endpoint, for instance <server>/realms/<realm>/protocol/openid-connect/userinfo",
+      "callbackUrl": "Callback URL",
+      "callbackUrlHelper": "Public, and ends with .oidc-callback.do. Register the same URL at the provider. For instance {{- url}}",
+      "returnMode": "After login, go to",
+      "returnUrl": "Return URL",
+      "returnCookie": "Cookie name"
+    },
+    "option": {
+      "basic": "HTTP Basic header",
+      "body": "Request body",
+      "homepage": "The site homepage",
+      "url": "A URL",
+      "cookie": "The URL held in a cookie"
+    },
+    "loginPage": {
+      "title": "Login page",
+      "enabled": "Send visitors who must log in on a protected page or file to this login page",
+      "helper": "Applies to live pages and files. Edit mode and the administration keep the Jahia login.",
+      "noProvider": "No provider is enabled: visitors keep the Jahia login until one is."
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "label": {
+    "title": "OpenID Connect",
+    "description": "Les fournisseurs d'identité avec lesquels les visiteurs se connectent. La page de connexion est /sites/<site>.oidc-login.html.",
+    "none": "Aucun fournisseur pour l'instant.",
+    "enabled": "Activé",
+    "saved": "Enregistré.",
+    "save": "Enregistrer",
+    "mappers": "Mappers",
+    "add": {
+      "title": "Ajouter un fournisseur",
+      "id": "Identifiant du fournisseur",
+      "idHelper": "1 à 32 lettres minuscules, chiffres ou tirets. Il désigne le fournisseur dans l'URL de connexion : ?provider=<id>",
+      "label": "Libellé",
+      "button": "Ajouter"
+    },
+    "delete": {
+      "button": "Supprimer",
+      "confirm": "Supprimer le fournisseur {{- label}} et ses mappers ?"
+    },
+    "field": {
+      "label": "Libellé",
+      "labelHelper": "Affiché sur la page de connexion",
+      "logoUrl": "URL du logo",
+      "logoUrlHelper": "URL http(s) absolue ou chemin commençant par /",
+      "order": "Ordre",
+      "clientId": "Client ID",
+      "clientSecret": "Secret client",
+      "clientSecretStored": "Un secret est enregistré. Laissez vide pour le conserver.",
+      "clientSecretNone": "Aucun secret n'est enregistré.",
+      "scope": "Scope",
+      "scopeHelper": "Séparés par des espaces : openid profile email",
+      "authentication": "Authentification du client",
+      "withPKCE": "PKCE (RFC 7636)",
+      "authorizationBaseUrl": "URL d'autorisation",
+      "authorizationBaseUrlHelper": "Se termine par /auth ou /authorize, par exemple <serveur>/realms/<realm>/protocol/openid-connect/auth",
+      "accessTokenEndpoint": "URL du point de terminaison du jeton",
+      "accessTokenEndpointHelper": "Se termine par /token, par exemple <serveur>/realms/<realm>/protocol/openid-connect/token",
+      "profileUrl": "URL du profil",
+      "profileUrlHelper": "Le point de terminaison userinfo, par exemple <serveur>/realms/<realm>/protocol/openid-connect/userinfo",
+      "callbackUrl": "URL de callback",
+      "callbackUrlHelper": "Publique, et se termine par .oidc-callback.do. Déclarez la même URL chez le fournisseur. Par exemple {{- url}}",
+      "returnMode": "Après la connexion, aller vers",
+      "returnUrl": "URL de retour",
+      "returnCookie": "Nom du cookie"
+    },
+    "option": {
+      "basic": "En-tête HTTP Basic",
+      "body": "Corps de la requête",
+      "homepage": "La page d'accueil du site",
+      "url": "Une URL",
+      "cookie": "L'URL contenue dans un cookie"
+    },
+    "loginPage": {
+      "title": "Page de connexion",
+      "enabled": "Envoyer vers cette page de connexion les visiteurs qui doivent se connecter sur une page ou un fichier protégé",
+      "helper": "S'applique aux pages et fichiers publiés. Le mode édition et l'administration gardent le login Jahia.",
+      "noProvider": "Aucun fournisseur n'est activé : les visiteurs gardent le login Jahia tant qu'aucun ne l'est."
+    }
+  }
+}

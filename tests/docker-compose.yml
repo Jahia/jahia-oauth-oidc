@@ -69,6 +69,10 @@ services:
       # Base64 of your Jahia EE license — see .env.example.
       JAHIA_LICENSE: ${JAHIA_LICENSE}
       JPDA: "true"
+      # Written to jahia.properties when the container is first configured. A protected page or file
+      # answers a guest with a 401 instead of a 404, which is what sends the guest to the OIDC login
+      # page of a site that enabled it (oidc-protected-resources.cy.ts).
+      JAHIA_PROPERTIES: '"protectedResourceAccessStrategy":"authorizationError"'
     # Without a bound limit the JVM sizes its heap against the whole Docker VM and can
     # starve everything else running on it.
     mem_limit: ${JAHIA_MEM_LIMIT:-4g}

@@ -1,6 +1,9 @@
 <jcauthnt = 'http://auth.jahiacommunity.org/jahia/nt/1.0'>
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+<mix = 'http://www.jcp.org/jcr/mix/1.0'>
 
 [jcauthnt:oauthOidcView] > jnt:content, jmix:authConnectorSettingView
 
+[jcauthnt:oidcLoginProviders] > jnt:content, jmix:droppableContent, jmix:editorialContent, mix:title
+ - autoRedirect (boolean) = false autocreated
