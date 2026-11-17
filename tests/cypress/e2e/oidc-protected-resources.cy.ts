@@ -50,10 +50,11 @@ describe('Protected resources', () => {
         cy.get('[data-test="username"]').invoke('text').then(username => {
             protectPage(siteKey, 'return-target', username.trim());
         });
+        setOidcLoginPage(siteKey, true);
+        // Every cy.apollo call sends its requests from the browser as root: drop that session only after the last one.
         resetBrowserSessions();
         cy.visit('/cms/login');
 
-        setOidcLoginPage(siteKey, true);
         cy.visit(pageUrl(siteKey, 'return-target'));
         cy.location('pathname').should('contain', `/sites/${siteKey}.oidc-login.html`);
         cy.location('search').should('contain', 'redirect=');
