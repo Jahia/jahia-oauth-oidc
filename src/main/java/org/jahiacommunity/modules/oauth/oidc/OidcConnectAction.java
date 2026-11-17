@@ -4,7 +4,6 @@ import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
 import org.jahia.bin.Render;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
-import org.jahia.modules.jahiaauth.service.SettingsService;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.render.RenderContext;
@@ -17,15 +16,23 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component(service = Action.class)
 public class OidcConnectAction extends Action {
     private static final Logger logger = LoggerFactory.getLogger(OidcConnectAction.class);
 
+    /**
+     * The connector name of the login in progress, read back by {@link OidcCallbackAction}.
+     */
+    static final String CONNECTOR_SESSION_ATTRIBUTE = OidcConnectAction.class.getName() + ".connectorName";
+    static final String PROVIDER_PARAMETER = "provider";
+
     @Reference
-    private SettingsService settingsService;
+    private OidcProviderRegistry oidcProviderRegistry;
     @Reference
     private JahiaOAuthService jahiaOAuthService;
 
@@ -37,11 +44,15 @@ public class OidcConnectAction extends Action {
 
     @Override
     public ActionResult doExecute(HttpServletRequest httpServletRequest, RenderContext renderContext, Resource resource, JCRSessionWrapper session, Map<String, List<String>> parameters, URLResolver urlResolver) {
-        ConnectorConfig connectConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), OidcConnector.KEY);
-        if (connectConfig == null) {
-            logger.error("Connector configuration not found for site {}", renderContext.getSite().getSiteKey());
+        String siteKey = renderContext.getSite().getSiteKey();
+        String providerId = getParameter(parameters, PROVIDER_PARAMETER);
+        Optional<ConnectorConfig> connectorConfig = oidcProviderRegistry.resolveForLogin(siteKey, providerId);
+        if (connectorConfig.isEmpty()) {
+            logger.error("No enabled OIDC provider matches the request on site {}", siteKey);
             return ActionResult.BAD_REQUEST;
         }
-        return new ActionResult(HttpServletResponse.SC_OK, jahiaOAuthService.getAuthorizationUrl(connectConfig, httpServletRequest.getSession(false).getId()), true, null);
+        HttpSession httpSession = httpServletRequest.getSession();
+        httpSession.setAttribute(CONNECTOR_SESSION_ATTRIBUTE, connectorConfig.get().getConnectorName());
+        return new ActionResult(HttpServletResponse.SC_OK, jahiaOAuthService.getAuthorizationUrl(connectorConfig.get(), httpSession.getId()), true, null);
     }
 }

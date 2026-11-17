@@ -17,6 +17,17 @@
                         <oidcoauthview jcr:primaryType="jcauthnt:oauthOidcView"/>
                     </pagecontent>
                 </oauth-oidc-view>
+                <!-- A login page for any site, whatever its template set: /sites/<siteKey>.oidc-login.html -->
+                <oidc-login-base j:view="oidcLogin" jcr:primaryType="jnt:template">
+                    <oidc-login j:applyOn="jnt:virtualsite"
+                                j:defaultTemplate="false"
+                                j:hiddenTemplate="false"
+                                jcr:primaryType="jnt:contentTemplate">
+                        <pagecontent jcr:primaryType="jnt:contentList">
+                            <oidc-login-providers autoRedirect="false" jcr:primaryType="jcauthnt:oidcLoginProviders"/>
+                        </pagecontent>
+                    </oidc-login>
+                </oidc-login-base>
             </templates>
         </jahia-oauth-oidc>
     </modules>

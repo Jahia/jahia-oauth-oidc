@@ -54,7 +54,7 @@
     <groupId>org.jahiacommunity.modules</groupId>
     <artifactId>jahia-oauth-oidc</artifactId>
     <name>Jahia OAuth OIDC</name>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>This is the custom module (Jahia OAuth OIDC) for running on a Jahia server.</description>
 
@@ -67,7 +67,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <jahia-depends>jahia-authentication,jahia-oauth</jahia-depends>
+        <jahia-depends>jahia-authentication,jahia-oauth,graphql-dxm-provider</jahia-depends>
     </properties>
 
     <dependencies>
@@ -81,6 +81,18 @@
             <groupId>org.jahia.modules</groupId>
             <artifactId>jahia-oauth</artifactId>
             <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jahia.modules</groupId>
+            <artifactId>graphql-dxm-provider</artifactId>
+            <version>3.7.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.graphql-java</groupId>
+            <artifactId>graphql-java-annotations</artifactId>
+            <version>21.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -103,16 +115,39 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jahia.server</groupId>
-                <artifactId>jahia-maven-plugin</artifactId>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.15.1</version>
                 <executions>
                     <execution>
-                        <id>i18n2js</id>
+                        <id>install node and yarn</id>
+                        <phase>generate-resources</phase>
                         <goals>
-                            <goal>javascript-dictionary</goal>
+                            <goal>install-node-and-yarn</goal>
                         </goals>
                         <configuration>
-                            <dictionaryName>jcauthoidci18n</dictionaryName>
+                            <nodeVersion>v20.18.0</nodeVersion>
+                            <yarnVersion>v1.22.22</yarnVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn install</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install --frozen-lockfile</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn build</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>build:production</arguments>
                         </configuration>
                     </execution>
                 </executions>

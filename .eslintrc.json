@@ -1,0 +1,15 @@
+{
+  "extends": "@jahia",
+  "root": true,
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@babel/preset-react"]
+    }
+  },
+  "globals": {
+    "OIDC_LOCALE_FILES": "readonly"
+  },
+  "ignorePatterns": ["src/main/resources/javascript/apps/**"]
+}

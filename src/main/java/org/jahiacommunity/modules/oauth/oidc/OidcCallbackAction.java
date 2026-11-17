@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,11 @@ public class OidcCallbackAction extends Action {
 
             try {
                 String siteKey = renderContext.getSite().getSiteKey();
-                ConnectorConfig connectorConfig = settingsService.getConnectorConfig(siteKey, OidcConnector.KEY);
+                ConnectorConfig connectorConfig = settingsService.getConnectorConfig(siteKey, connectorName(httpServletRequest));
+                if (connectorConfig == null) {
+                    logger.error("No OIDC provider configuration for the login in progress on site {}", siteKey);
+                    return ActionResult.BAD_REQUEST;
+                }
                 jahiaOAuthService.extractAccessTokenAndExecuteMappers(connectorConfig, token, httpServletRequest.getSession(false).getId());
                 String returnMode = connectorConfig.getProperty("returnMode");
                 String returnUrl = null;
@@ -97,5 +102,17 @@ public class OidcCallbackAction extends Action {
             logger.error("Could not authenticate user with SSO, the callback from the server was missing mandatory parameters");
         }
         return ActionResult.BAD_REQUEST;
+    }
+
+    /**
+     * @return the connector the login started with, or the single-provider connector when the session holds none
+     */
+    private static String connectorName(HttpServletRequest httpServletRequest) {
+        HttpSession httpSession = httpServletRequest.getSession(false);
+        Object connectorName = httpSession == null ? null : httpSession.getAttribute(OidcConnectAction.CONNECTOR_SESSION_ATTRIBUTE);
+        if (connectorName instanceof String && OidcConnector.isOidcConnectorName((String) connectorName)) {
+            return (String) connectorName;
+        }
+        return OidcConnector.KEY;
     }
 }

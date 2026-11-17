@@ -12,6 +12,9 @@ Jahia exchanges it server-side for a real token before calling `/userinfo`.
 | `oidc-authentication-flows.cy.ts` | The authorization-code flow across two dimensions the connector implements itself: client authentication at the token endpoint (**HTTP Basic** vs **request body**) × **PKCE on/off**. Plus: a PKCE-requiring client refusing a connector configured without PKCE. |
 | `oidc-return-modes.cy.ts` | Where the callback sends the user afterwards — `homepage`, `url`, `cookie`, and the fallback when the named cookie is absent. |
 | `oidc-callback-errors.cy.ts` | `.oidc-callback.do` on its own: missing code, blank code, invalid code. |
+| `oidc-multiple-providers.cy.ts` | Three providers on one site, one of them disabled: the login page `/sites/<key>.oidc-login.html` lists the enabled ones in their order, a login goes through each of them, and `.oidc-connect.do` refuses a disabled, unknown, malformed or ambiguous provider. |
+| `oidc-provider-administration.cy.ts` | Administration > Sites > OpenID Connect: add providers, refuse a used or malformed id, refuse an invalid callback URL, save the settings of one without sending its secret back, delete another. Plus the card of the Jahia Authentication settings, which lists the providers and links to their mappers. |
+| `oidc-graphql-api.cy.ts` | The GraphQL API behind that page: a guest is refused, invalid settings are refused, an empty secret keeps the stored one, and the schema has no field that returns it. |
 
 The PKCE cases run against a Keycloak client configured to **require** S256, so they
 fail if no `code_challenge` is actually sent — they cannot pass vacuously.
@@ -48,8 +51,8 @@ curl -u root:root1234 -X POST http://localhost:8080/modules/api/provisioning \
 # the `;type=text/yaml` matters — without it the script part is parsed as JSON and 500s
 curl -u root:root1234 -X POST http://localhost:8080/modules/api/provisioning \
   -F "script=@assets/deploy-modules.yml;type=text/yaml" \
-  -F file=@../target/jahia-oauth-oidc-2.0.2-SNAPSHOT.jar \
-  -F file=@jahia-module/target/jahia-oauth-oidc-test-module-2.0.2-SNAPSHOT.jar
+  -F file=@../target/jahia-oauth-oidc-3.0.0-SNAPSHOT.jar \
+  -F file=@jahia-module/target/jahia-oauth-oidc-test-module-3.0.0-SNAPSHOT.jar
 ```
 
 Then run the tests:
@@ -60,6 +63,23 @@ yarn e2e:ci               # headless run
 
 yarn env:down             # tear the environment down and drop its state
 ```
+
+### Against a Jahia that is already running
+
+Start Keycloak alone, and point the suite at your Jahia:
+
+```bash
+docker compose up -d --wait keycloak
+export JAHIA_URL=http://localhost:8200
+export SUPER_USER_PASSWORD    # the root password of that Jahia
+export KEYCLOAK_INTERNAL_URL=http://host.docker.internal:8081
+yarn e2e:ci
+```
+
+- `SUPER_USER_PASSWORD` is required once `JAHIA_URL` is set: @jahia/cypress only falls back to its default root password when both are unset.
+- `KEYCLOAK_INTERNAL_URL` is how Jahia, inside its own container, reaches Keycloak on your host. The pinned `KC_HOSTNAME` keeps the issuer identical on both paths (see below).
+- Deploy the dependencies, the module and the test module first, as above.
+- A license that limits the number of logged-in users makes the later logins fail, with `Maximum number of logged in users reached` in the Jahia log: every test logs `oidc.user` in, and the sessions outlive the test.
 
 A module stuck at `INSTALLED` instead of `ACTIVE` after deploy almost always means one of
 the dependencies is missing.
@@ -120,9 +140,15 @@ fine for a throwaway local realm; do not copy the client definitions into a real
 Each test creates its own site (random key, `jahia-oauth-oidc-test-module` template set),
 then installs the connector configuration as an OSGi factory configuration —
 `org.jahia.modules.auth-<siteKey>.cfg`, keyed by a top-level `siteKey` property — via the
-provisioning API. Installing that file is what makes jahia-authentication call
-`OidcConnector.validateSettings()`, which registers the `OidcConnector-<siteKey>` OAuth
-API; without it the flow cannot start.
+provisioning API. `configureOidcConnector()` writes the original single provider, as a site
+configured with version 2.x holds it; `configureOidcConnectors()` writes several named
+providers (`OidcConnector-<providerId>.*`) in the same file.
+
+Installing that file is what makes the module publish each connector name in OSGi
+(`OidcProviderRegistry` listens to the `org.jahia.modules.auth` configurations). A named
+provider uses the `OidcApi` OAuth API, registered when the module starts. The original
+provider keeps the API name the 2.x UI saved, `OidcConnector-<siteKey>`, which
+`OidcConnector.validateSettings()` registers.
 
 Claim mapping is done by **jcr-auth-provider**. `OidcConnector.getAvailableProperties()`
 returns an empty list, so nothing resolves from a connector-declared schema and jahia-oauth
@@ -158,11 +184,11 @@ for exactly that reason — it drives both the URL Cypress is redirected to and 
 **The connector configuration is installed twice.** jahia-authentication only calls
 `ConnectorService.validateSettings()` when it updates a configuration it already knows —
 `SettingsServiceImpl.updated()` does it in its else-branch only, and the first callback for
-a brand-new pid takes the other branch. Most jahia-oauth connectors don't notice, because
-their APIs are registered statically at service activation; this one registers
+a brand-new pid takes the other branch. The original provider registers its legacy API name
 `OidcConnector-<siteKey>` *from* `validateSettings()`, so on a first-ever install it is
 never registered and `.oidc-connect.do` fails with a 500. The second install carries a
-nonce so the properties genuinely differ — Config Admin skips a no-op update.
+nonce so the properties genuinely differ — Config Admin skips a no-op update. A named
+provider uses the `OidcApi` registered at activation, and does not need it.
 
 **`support/e2e.ts` visits a Jahia page before every test.** These specs navigate the
 browser to Keycloak, a different origin. `cy.apollo` issues its request from the
@@ -173,7 +199,7 @@ publication helper. The visit makes the starting origin deterministic.
 
 ## Note on the `scope` property
 
-The tests send a **space-separated** scope (`openid profile email`), per RFC 6749. The
-module README documents the scope as comma separated; a comma-separated value is sent
+The tests send a **space-separated** scope (`openid profile email`), per RFC 6749, as the
+module README and the settings screen now document it. A comma-separated value is sent
 verbatim to the provider and Keycloak reads it as one unknown scope, which yields a token
 without the `profile`/`email` claims the mapping depends on.

@@ -12,26 +12,24 @@ import com.github.scribejava.core.oauth2.clientauthentication.HttpBasicAuthentic
 import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthenticationScheme;
 
 import java.io.OutputStream;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class OidcApi extends DefaultApi20 {
-    private static final ConcurrentMap<String, OidcApi> INSTANCES = new ConcurrentHashMap<>();
+    private final String connectorName;
     private final String accessTokenEndpoint;
     private final String authorizationBaseUrl;
     private final boolean withPKCE;
     private final String authorization;
 
-    public OidcApi(boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl, String authorization) {
+    public OidcApi(String connectorName, Boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl, String authorization) {
+        this.connectorName = connectorName;
         this.accessTokenEndpoint = accessTokenEndpoint;
         this.authorizationBaseUrl = authorizationBaseUrl;
-        this.withPKCE = withPKCE;
+        this.withPKCE = Boolean.TRUE.equals(withPKCE);
         this.authorization = authorization;
     }
 
-    public static OidcApi instance(String siteKey, Boolean withPKCE, String accessTokenEndpoint, String authorizationBaseUrl, String authorization) {
-        INSTANCES.put(siteKey, new OidcApi(withPKCE, accessTokenEndpoint, authorizationBaseUrl, authorization));
-        return INSTANCES.get(siteKey);
+    public String getConnectorName() {
+        return connectorName;
     }
 
     @Override
