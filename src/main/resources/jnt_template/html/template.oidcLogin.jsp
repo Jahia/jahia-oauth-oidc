@@ -3,13 +3,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="template" uri="http://www.jahia.org/tags/templateLib" %>
 <%@ taglib prefix="oidc" uri="http://www.jahiacommunity.org/tags/oauth-oidc" %>
 <%--@elvariable id="renderContext" type="org.jahia.services.render.RenderContext"--%>
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
 <%-- The login page of a site, /sites/<siteKey>.oidc-login.html, in the look of the Jahia login page
      (war/src/main/webapp/errors/error_401.jsp): it reuses the styles and images that Jahia serves. --%>
-<template:addCacheDependency path="${oidc:cacheDependency(renderContext.site.siteKey)}"/>
+${oidc:addPageCacheDependency(renderContext)}
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 <c:set var="providers" value="${oidc:loginProviders(renderContext.site.siteKey)}"/>
 <c:set var="connectUrl" value="${url.base}${renderContext.site.path}.oidc-connect.do"/>

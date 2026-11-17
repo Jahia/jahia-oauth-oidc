@@ -28,4 +28,10 @@
         <function-class>org.jahiacommunity.modules.oauth.oidc.tag.OidcFunctions</function-class>
         <function-signature>java.lang.String cacheDependency(java.lang.String)</function-signature>
     </function>
+    <function>
+        <description>Makes the page being rendered depend on the OIDC providers of its site, for a template view</description>
+        <name>addPageCacheDependency</name>
+        <function-class>org.jahiacommunity.modules.oauth.oidc.tag.OidcFunctions</function-class>
+        <function-signature>java.lang.String addPageCacheDependency(org.jahia.services.render.RenderContext)</function-signature>
+    </function>
 </taglib>

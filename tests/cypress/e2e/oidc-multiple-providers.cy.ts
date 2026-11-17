@@ -1,4 +1,5 @@
 import {faker} from '@faker-js/faker';
+import gql from 'graphql-tag';
 import {
     CLIENT_NO_PKCE,
     CLIENT_PKCE,
@@ -74,6 +75,25 @@ describe('Multiple OIDC providers', () => {
             .then(links => Cypress.$.makeArray(links).map(link => link.getAttribute('data-provider')))
             .should('deep.equal', ['pkce', 'basic']);
         cy.get('[data-provider="pkce"]').should('contain', 'Keycloak with PKCE');
+    });
+
+    it('Should drop a provider turned off since the page was cached', () => {
+        const providers = () => cy.get('[data-test="oidc-login-providers"] [data-provider]')
+            .then(links => Cypress.$.makeArray(links).map(link => link.getAttribute('data-provider')));
+        cy.visit(loginPageUrl());
+        providers().should('deep.equal', ['pkce', 'basic']);
+
+        cy.apollo({
+            mutation: gql`mutation($siteKey: String!) {
+                setOidcProviderEnabled(siteKey: $siteKey, providerId: "basic", enabled: false) { id }
+            }`,
+            variables: {siteKey}
+        });
+        // Every cy.apollo call sends its requests from the browser as root: drop that session only after the last one.
+        resetBrowserSessions();
+
+        cy.visit(loginPageUrl());
+        providers().should('deep.equal', ['pkce']);
     });
 
     ['pkce', 'basic'].forEach(providerId => {

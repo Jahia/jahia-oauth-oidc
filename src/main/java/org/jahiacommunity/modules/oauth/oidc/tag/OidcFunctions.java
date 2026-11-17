@@ -1,6 +1,7 @@
 package org.jahiacommunity.modules.oauth.oidc.tag;
 
 import org.jahia.osgi.BundleUtils;
+import org.jahia.services.render.RenderContext;
 import org.jahiacommunity.modules.oauth.oidc.OidcProvider;
 import org.jahiacommunity.modules.oauth.oidc.OidcProviderRegistry;
 
@@ -35,5 +36,16 @@ public final class OidcFunctions {
      */
     public static String cacheDependency(String siteKey) {
         return OidcProviderRegistry.cacheDependency(siteKey);
+    }
+
+    /**
+     * Makes the page being rendered depend on the providers of its site. A template view renders inside the
+     * fragment of the main resource, so a dependency added to its own resource is lost.
+     *
+     * @return an empty string, so that the call prints nothing
+     */
+    public static String addPageCacheDependency(RenderContext renderContext) {
+        renderContext.getMainResource().getDependencies().add(cacheDependency(renderContext.getSite().getSiteKey()));
+        return "";
     }
 }
