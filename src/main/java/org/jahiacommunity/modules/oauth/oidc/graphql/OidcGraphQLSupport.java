@@ -2,6 +2,7 @@ package org.jahiacommunity.modules.oauth.oidc.graphql;
 
 import graphql.ErrorType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jahia.modules.graphql.provider.dxm.BaseGqlClientException;
 import org.jahia.modules.graphql.provider.dxm.DataFetchingException;
 import org.jahia.osgi.BundleUtils;
@@ -172,7 +173,7 @@ final class OidcGraphQLSupport {
     }
 
     private static String httpUrl(String value, String what) {
-        if (!StringUtils.startsWithAny(value.toLowerCase(), "https://", "http://")) {
+        if (!Strings.CI.startsWithAny(value, "https://", "http://")) {
             throw invalid(what + " must be an absolute http(s) URL");
         }
         return value;
@@ -184,7 +185,7 @@ final class OidcGraphQLSupport {
             return null;
         }
         boolean serverRelative = url.startsWith("/") && !url.startsWith("//");
-        if (!serverRelative && !StringUtils.startsWithAny(url.toLowerCase(), "https://", "http://")) {
+        if (!serverRelative && !Strings.CI.startsWithAny(url, "https://", "http://")) {
             throw invalid("The logo URL must be an absolute http(s) URL or a path that starts with /");
         }
         return url;

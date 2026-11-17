@@ -63,6 +63,6 @@ public class OidcApi extends DefaultApi20 {
         if ("body".equals(authorization)) {
             return RequestBodyAuthenticationScheme.instance();
         }
-        throw new RuntimeException("Unsupported client authentication");
+        throw new IllegalStateException("Unsupported client authentication: " + authorization);
     }
 }

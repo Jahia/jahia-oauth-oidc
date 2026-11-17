@@ -5,11 +5,19 @@
   "parserOptions": {
     "requireConfigFile": false,
     "babelOptions": {
-      "presets": ["@babel/preset-react"]
+      "presets": [
+        "@babel/preset-react"
+      ]
     }
   },
   "globals": {
     "OIDC_LOCALE_FILES": "readonly"
   },
-  "ignorePatterns": ["src/main/resources/javascript/apps/**"]
+  "ignorePatterns": [
+    "src/main/resources/javascript/apps/**"
+  ],
+  "env": {
+    "browser": true,
+    "es2020": true
+  }
 }

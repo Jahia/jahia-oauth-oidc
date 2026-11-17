@@ -1,6 +1,7 @@
 package org.jahiacommunity.modules.oauth.oidc;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Map;
@@ -41,7 +42,7 @@ public final class OidcProvider {
             return null;
         }
         boolean serverRelative = url.startsWith("/") && !url.startsWith("//");
-        return serverRelative || StringUtils.startsWithAny(url.toLowerCase(), "https://", "http://") ? url : null;
+        return serverRelative || Strings.CI.startsWithAny(url, "https://", "http://") ? url : null;
     }
 
     public String getId() {

@@ -6,7 +6,7 @@ import {Button, Delete, Dropdown, Field, Input, OpenInNew, Paper, Save, Switch, 
 import {DELETE_PROVIDER, SAVE_PROVIDER} from './OidcProviders.gql';
 import styles from './OidcProviders.css';
 
-const contextPath = window.contextJsParameters?.contextPath || '';
+const contextPath = globalThis.contextJsParameters?.contextPath || '';
 
 const toForm = provider => ({
     enabled: provider.enabled,
@@ -84,7 +84,7 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
         variables: {
             siteKey,
             providerId,
-            settings: {...form, order: parseInt(form.order, 10) || 0}
+            settings: {...form, order: Number.parseInt(form.order, 10) || 0}
         }
     }).then(() => {
         setSaved(true);
@@ -93,16 +93,16 @@ export const ProviderForm = ({siteKey, language, provider, onSaved, onDeleted}) 
 
     const remove = () => {
         // eslint-disable-next-line no-alert
-        if (window.confirm(t('label.delete.confirm', {label: provider.label}))) {
+        if (globalThis.confirm(t('label.delete.confirm', {label: provider.label}))) {
             deleteProvider({variables: {siteKey, providerId}}).then(onDeleted).catch(() => {
                 // Shown below from the state of the mutation
             });
         }
     };
 
-    const openMappers = () => window.open(`${contextPath}/cms/editframe/default/${language}/sites/${siteKey}.auth-connector-site-settings.html?redirect=false#/mappers/${provider.connectorServiceName}`, '_blank', 'noopener');
+    const openMappers = () => globalThis.open(`${contextPath}/cms/editframe/default/${language}/sites/${siteKey}.auth-connector-site-settings.html?redirect=false#/mappers/${provider.connectorServiceName}`, '_blank', 'noopener');
 
-    const suggestedCallbackUrl = `${window.location.origin}${contextPath}/cms/render/live/${language}/sites/${siteKey}.oidc-callback.do`;
+    const suggestedCallbackUrl = `${globalThis.location.origin}${contextPath}/cms/render/live/${language}/sites/${siteKey}.oidc-callback.do`;
     const options = values => values.map(value => ({value, label: t(`label.option.${value}`)}));
     const authentications = options(['basic', 'body']);
     const returnModes = options(['homepage', 'url', 'cookie']);

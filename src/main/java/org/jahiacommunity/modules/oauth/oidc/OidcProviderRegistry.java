@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +66,7 @@ public class OidcProviderRegistry implements ConfigurationListener {
      * Names created by this node whose configuration Config Admin has not reported yet.
      */
     private final Set<String> pendingNames = new HashSet<>();
-    private volatile Map<String, String> siteKeysByPid = Collections.emptyMap();
+    private final Map<String, String> siteKeysByPid = new ConcurrentHashMap<>();
 
     @Activate
     private void onActivate(BundleContext context) {
@@ -122,7 +123,8 @@ public class OidcProviderRegistry implements ConfigurationListener {
                 siteKeys.put(configuration.getPid(), properties.get(JahiaAuthConstants.SITE_KEY).toString());
             }
         }
-        siteKeysByPid = siteKeys;
+        siteKeysByPid.keySet().retainAll(siteKeys.keySet());
+        siteKeysByPid.putAll(siteKeys);
         pendingNames.removeAll(names);
         names.addAll(pendingNames);
         publish(names);
@@ -132,7 +134,8 @@ public class OidcProviderRegistry implements ConfigurationListener {
         if (registration != null && names.equals(registeredNames)) {
             return;
         }
-        Dictionary<String, Object> properties = new Hashtable<>();
+        // The OSGi API takes a Dictionary, which Hashtable implements.
+        @SuppressWarnings("java:S1149") Dictionary<String, Object> properties = new Hashtable<>();
         properties.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, names.toArray(new String[0]));
         if (registration == null) {
             registration = bundleContext.registerService(

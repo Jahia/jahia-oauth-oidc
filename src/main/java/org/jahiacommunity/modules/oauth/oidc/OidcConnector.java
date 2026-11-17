@@ -2,6 +2,7 @@ package org.jahiacommunity.modules.oauth.oidc;
 
 import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaauth.service.SettingsService;
@@ -131,14 +132,14 @@ public class OidcConnector implements OAuthConnectorService {
     }
 
     public static String toProviderId(String connectorName) {
-        return KEY.equals(connectorName) ? DEFAULT_PROVIDER_ID : StringUtils.removeStart(connectorName, NAMED_PREFIX);
+        return KEY.equals(connectorName) ? DEFAULT_PROVIDER_ID : Strings.CS.removeStart(connectorName, NAMED_PREFIX);
     }
 
     public static boolean isOidcConnectorName(String connectorName) {
         if (KEY.equals(connectorName)) {
             return true;
         }
-        if (!StringUtils.startsWith(connectorName, NAMED_PREFIX)) {
+        if (!Strings.CS.startsWith(connectorName, NAMED_PREFIX)) {
             return false;
         }
         String providerId = connectorName.substring(NAMED_PREFIX.length());
